@@ -7,7 +7,7 @@ can be corrected later without touching the UI.
 ## Release schedule
 
 - A puzzle is identified by its **release date, which is always a Wednesday** (`YYYY-MM-DD`).
-- Exactly **one new puzzle per week**. The *current* puzzle is the one whose release date is the
+- Exactly **one new puzzle per week**. The _current_ puzzle is the one whose release date is the
   most recent Wednesday **on or before now**.
 - The rollover happens at **Wednesday 00:00 Europe/Berlin**, not UTC and not the device's local
   time. A fixed zone keeps the puzzle the same for everyone regardless of where the phone thinks
@@ -62,10 +62,10 @@ reversible, but only `exclude` is implemented and tested in v1.
 
 ## Scoring **[assumption — NYT-derived]**
 
-| Word | Points |
-| --- | --- |
-| 4 letters | 1 |
-| 5+ letters | 1 point per letter |
+| Word                               | Points              |
+| ---------------------------------- | ------------------- |
+| 4 letters                          | 1                   |
+| 5+ letters                         | 1 point per letter  |
 | Pangram (uses all 7 board letters) | word points **+ 7** |
 
 `maxScore` is the sum over the whole solution set and is stored in the puzzle file.
@@ -75,18 +75,18 @@ reversible, but only `exclude` is implemented and tested in v1.
 Thresholds are a **percentage of `maxScore`**, rounded down, so every puzzle has the same shape
 of progression.
 
-| % of max | German label |
-| --- | --- |
-| 0 | Anfang |
-| 2 | Guter Start |
-| 5 | Aufstieg |
-| 8 | Gut |
-| 15 | Solide |
-| 25 | Stark |
-| 40 | Großartig |
-| 50 | Erstaunlich |
-| 70 | Genie |
-| 100 | Bienenkönigin |
+| % of max | German label  |
+| -------- | ------------- |
+| 0        | Anfang        |
+| 2        | Guter Start   |
+| 5        | Aufstieg      |
+| 8        | Gut           |
+| 15       | Solide        |
+| 25       | Stark         |
+| 40       | Großartig     |
+| 50       | Erstaunlich   |
+| 70       | Genie         |
+| 100      | Bienenkönigin |
 
 Rank labels live in `src/locale/de.ts`; the thresholds live in the engine. **[assumption]** —
 the original's ladder may differ in count and naming.
@@ -109,11 +109,11 @@ defined in `04-wordlist.md`.
 
 ## Feedback
 
-| Situation | German message |
-| --- | --- |
-| Too short | „Zu kurz" |
-| Center letter missing | „Mittelbuchstabe fehlt" |
-| Not in the list | „Kein Wort in der Liste" |
-| Already found | „Schon gefunden" |
-| Accepted | „Gut!" / „Stark!" / „Ausgezeichnet!" by word length |
-| Pangram | „Pangramm!" + bonus indicator |
+| Situation             | German message                                      |
+| --------------------- | --------------------------------------------------- |
+| Too short             | „Zu kurz"                                           |
+| Center letter missing | „Mittelbuchstabe fehlt"                             |
+| Not in the list       | „Kein Wort in der Liste"                            |
+| Already found         | „Schon gefunden"                                    |
+| Accepted              | „Gut!" / „Stark!" / „Ausgezeichnet!" by word length |
+| Pangram               | „Pangramm!" + bonus indicator                       |

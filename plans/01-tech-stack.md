@@ -8,19 +8,19 @@ bundle size, offline behaviour and low maintenance burden the things worth optim
 
 ## Stack at a glance
 
-| Concern | Choice | Why |
-| --- | --- | --- |
-| Language | TypeScript (strict) | The rule engine benefits from exhaustive union types |
-| Build | **Vite 7** | Fast dev server, static output, first-class Svelte + PWA plugins |
-| UI | **Svelte 5** (runes) | Compiler, not runtime: ~3 kB. Scoped CSS, transitions and `animate:flip` built in |
-| Styling | Plain CSS in component `<style>` blocks + a few CSS custom properties | Svelte scopes it automatically; no Tailwind needed at this size |
-| State | Engine reducer + `$state` runes | Game state is one object driven by one reducer |
-| Offline / install | **`vite-plugin-pwa`** (Workbox) | Manifest, service worker, precached puzzle files — the phone use case |
-| Persistence | `localStorage`, versioned schema | Per-day progress, no backend |
-| Offline tooling | Node scripts in `tools/`, run via `tsx` | Dictionary and puzzle generation are build-time jobs |
-| Unit tests | **Vitest** | Same transform pipeline as Vite, zero extra config |
-| Lint/format | ESLint (flat config) + Prettier, with `prettier-plugin-svelte` | Standard |
-| Hosting | Any static host or a personal server | Output is `index.html` + assets + puzzle JSON |
+| Concern           | Choice                                                                | Why                                                                               |
+| ----------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Language          | TypeScript (strict)                                                   | The rule engine benefits from exhaustive union types                              |
+| Build             | **Vite 7**                                                            | Fast dev server, static output, first-class Svelte + PWA plugins                  |
+| UI                | **Svelte 5** (runes)                                                  | Compiler, not runtime: ~3 kB. Scoped CSS, transitions and `animate:flip` built in |
+| Styling           | Plain CSS in component `<style>` blocks + a few CSS custom properties | Svelte scopes it automatically; no Tailwind needed at this size                   |
+| State             | Engine reducer + `$state` runes                                       | Game state is one object driven by one reducer                                    |
+| Offline / install | **`vite-plugin-pwa`** (Workbox)                                       | Manifest, service worker, precached puzzle files — the phone use case             |
+| Persistence       | `localStorage`, versioned schema                                      | Per-day progress, no backend                                                      |
+| Offline tooling   | Node scripts in `tools/`, run via `tsx`                               | Dictionary and puzzle generation are build-time jobs                              |
+| Unit tests        | **Vitest**                                                            | Same transform pipeline as Vite, zero extra config                                |
+| Lint/format       | ESLint (flat config) + Prettier, with `prettier-plugin-svelte`        | Standard                                                                          |
+| Hosting           | Any static host or a personal server                                  | Output is `index.html` + assets + puzzle JSON                                     |
 
 **No backend, no database, no accounts.** The whole game is static files plus `localStorage`.
 

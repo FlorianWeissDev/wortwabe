@@ -16,15 +16,15 @@ words the game accepts. This is the single most important structural constraint 
 
 ### 1. Engine (`src/engine/`) — pure logic, fully unit-tested
 
-| Module | Responsibility |
-| --- | --- |
-| `types.ts` | `Puzzle`, `GameState`, `SubmitResult`, `Rank` — the shared vocabulary |
-| `normalize.ts` | Lowercasing, stripping non-letters, rejecting umlauts/ß (see `03-game-rules.md`) |
-| `validate.ts` | Turns an input string into a `SubmitResult`: accepted, or a typed rejection reason |
-| `score.ts` | Points per word, pangram bonus, total, max score |
-| `rank.ts` | Score → rank, plus points needed for the next rank |
-| `schedule.ts` | Wednesday-release date math: current puzzle date, released-vs-future, listing |
-| `reducer.ts` | `(state, action) => state` for `TYPE`, `DELETE`, `CLEAR`, `SHUFFLE`, `SUBMIT` |
+| Module         | Responsibility                                                                     |
+| -------------- | ---------------------------------------------------------------------------------- |
+| `types.ts`     | `Puzzle`, `GameState`, `SubmitResult`, `Rank` — the shared vocabulary              |
+| `normalize.ts` | Lowercasing, stripping non-letters, rejecting umlauts/ß (see `03-game-rules.md`)   |
+| `validate.ts`  | Turns an input string into a `SubmitResult`: accepted, or a typed rejection reason |
+| `score.ts`     | Points per word, pangram bonus, total, max score                                   |
+| `rank.ts`      | Score → rank, plus points needed for the next rank                                 |
+| `schedule.ts`  | Wednesday-release date math: current puzzle date, released-vs-future, listing      |
+| `reducer.ts`   | `(state, action) => state` for `TYPE`, `DELETE`, `CLEAR`, `SHUFFLE`, `SUBMIT`      |
 
 `schedule.ts` is pure date arithmetic over `Europe/Berlin` and takes "now" as an argument — it
 never reads the clock itself. That is what makes the rollover testable (see `03-game-rules.md`).
@@ -40,13 +40,13 @@ One file per **release Wednesday**, generated ahead of time and committed. Shape
 ```jsonc
 {
   "schemaVersion": 1,
-  "date": "2026-08-19",   // always a Wednesday
+  "date": "2026-08-19", // always a Wednesday
   "centerLetter": "r",
   "outerLetters": ["a", "e", "i", "k", "n", "t"],
-  "solutions": ["kanten", "kerne", "..."],   // normalized, lowercase, ASCII only
-  "displayForms": { "kanten": "Kanten" },     // capitalization for nouns
+  "solutions": ["kanten", "kerne", "..."], // normalized, lowercase, ASCII only
+  "displayForms": { "kanten": "Kanten" }, // capitalization for nouns
   "pangrams": ["..."],
-  "maxScore": 214
+  "maxScore": 214,
 }
 ```
 
@@ -59,25 +59,25 @@ every puzzle, and the app fetches a single puzzle file only when it is actually 
 
 ### 3. Offline tooling (`tools/`)
 
-| Script | Responsibility |
-| --- | --- |
+| Script                | Responsibility                                                                     |
+| --------------------- | ---------------------------------------------------------------------------------- |
 | `build-dictionary.ts` | Raw source → filtered, normalized word list + display forms (see `04-wordlist.md`) |
-| `generate-puzzle.ts` | Pick a letter set, compute solutions, score it, reject bad puzzles |
-| `generate-season.ts` | Batch-generate the next N release Wednesdays and rewrite `index.json` |
+| `generate-puzzle.ts`  | Pick a letter set, compute solutions, score it, reject bad puzzles                 |
+| `generate-season.ts`  | Batch-generate the next N release Wednesdays and rewrite `index.json`              |
 
 These run manually or in CI, never in the browser.
 
 ### 4. UI (`src/app/`) — Svelte 5 components
 
-| Component | Notes |
-| --- | --- |
-| `Hive.svelte` | Seven hexagons (CSS `clip-path`), center letter visually distinct, click + keyboard. Shuffle uses `animate:flip` |
-| `InputLine.svelte` | The word being typed, with a caret; center letter highlighted inside the word |
-| `Controls.svelte` | Löschen / Mischen / Eingeben |
-| `FoundWords.svelte` | Collapsible on mobile, alphabetically sorted, pangrams marked |
-| `RankBar.svelte` | Progress ladder with the current German rank label |
-| `Toast.svelte` | Transient feedback, driven by the last `SubmitResult` |
-| `RulesDialog.svelte` | German rules explanation, opened from the header |
+| Component             | Notes                                                                                                                        |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `Hive.svelte`         | Seven hexagons (CSS `clip-path`), center letter visually distinct, click + keyboard. Shuffle uses `animate:flip`             |
+| `InputLine.svelte`    | The word being typed, with a caret; center letter highlighted inside the word                                                |
+| `Controls.svelte`     | Löschen / Mischen / Eingeben                                                                                                 |
+| `FoundWords.svelte`   | Collapsible on mobile, alphabetically sorted, pangrams marked                                                                |
+| `RankBar.svelte`      | Progress ladder with the current German rank label                                                                           |
+| `Toast.svelte`        | Transient feedback, driven by the last `SubmitResult`                                                                        |
+| `RulesDialog.svelte`  | German rules explanation, opened from the header                                                                             |
 | `PuzzlePicker.svelte` | Lists released puzzles newest first, marks the current week and shows per-puzzle rank; future dates are absent, not disabled |
 
 State lives in a single `$state` object holding the engine's `GameState`; components receive it

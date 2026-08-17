@@ -9,12 +9,12 @@ The word list decides whether the game is delightful or infuriating. Two failure
 
 ## Source candidates
 
-| Source | License | Assessment |
-| --- | --- | --- |
-| **igerman98 / hunspell `de_DE`** | GPL/LGPL/MPL tri-license | **Primary.** Broad coverage, actively maintained, ships as base words + affix rules that must be *unmunched* into full forms |
+| Source                                     | License                              | Assessment                                                                                                                                   |
+| ------------------------------------------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **igerman98 / hunspell `de_DE`**           | GPL/LGPL/MPL tri-license             | **Primary.** Broad coverage, actively maintained, ships as base words + affix rules that must be _unmunched_ into full forms                 |
 | **DWDS / Leipzig Corpora frequency lists** | CC BY-SA / CC BY-NC (varies per set) | **Frequency signal only** — used to rank and cut, not as the word source. License per dataset must be checked before committing derived data |
-| **German Wiktionary dump** | CC BY-SA 3.0 | Fallback for display forms and part-of-speech tags; heavy to process |
-| ZEIT's own list | — | **Never.** Not scraped, not referenced |
+| **German Wiktionary dump**                 | CC BY-SA 3.0                         | Fallback for display forms and part-of-speech tags; heavy to process                                                                         |
+| ZEIT's own list                            | —                                    | **Never.** Not scraped, not referenced                                                                                                       |
 
 Licenses of whatever we ship get recorded in `data/dictionary/SOURCES.md` with attribution.
 
@@ -46,7 +46,7 @@ the cutoff is too low.
 
 ### Size impact of the umlaut exclusion
 
-Dropping every word with ä/ö/ü/ß is a large cut — plurals (*Bäume*), comparatives (*größer*) and
+Dropping every word with ä/ö/ü/ß is a large cut — plurals (_Bäume_), comparatives (_größer_) and
 many common stems disappear. Measure the surviving word count at the end of M2: if it is too
 small to satisfy the puzzle quality gates below, the lever to pull first is the frequency cutoff,
 not the umlaut rule.
@@ -63,14 +63,14 @@ not the umlaut rule.
 
 ### Quality gates
 
-| Gate | Target | Reason |
-| --- | --- | --- |
-| Solution count | 30–90 | A puzzle has to carry a whole week, so aim higher than a daily would |
-| Pangram count | 1–4 | At least one, but not a giveaway |
-| `maxScore` | 80–350 | Keeps rank thresholds meaningful |
-| Share of 4-letter words | ≤ 60 % | Otherwise the puzzle is padding |
-| Letter set | no repeat within the last 52 puzzles | Avoids déjà-vu (a year at one per week) |
-| Center letter | not `q`/`y`/`x` | Too restrictive in German |
+| Gate                    | Target                               | Reason                                                               |
+| ----------------------- | ------------------------------------ | -------------------------------------------------------------------- |
+| Solution count          | 30–90                                | A puzzle has to carry a whole week, so aim higher than a daily would |
+| Pangram count           | 1–4                                  | At least one, but not a giveaway                                     |
+| `maxScore`              | 80–350                               | Keeps rank thresholds meaningful                                     |
+| Share of 4-letter words | ≤ 60 %                               | Otherwise the puzzle is padding                                      |
+| Letter set              | no repeat within the last 52 puzzles | Avoids déjà-vu (a year at one per week)                              |
+| Center letter           | not `q`/`y`/`x`                      | Too restrictive in German                                            |
 
 Generation is deterministic given a seed, so a puzzle set is reproducible from the seed + the
 dictionary version.

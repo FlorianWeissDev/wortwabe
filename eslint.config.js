@@ -25,8 +25,9 @@ export default ts.config(
   },
   {
     // German user-facing text belongs in src/locale only (see CLAUDE.md).
+    // Tests and fixtures are exempt: German words are the data under test.
     files: ['src/**/*.ts', 'src/**/*.svelte'],
-    ignores: ['src/locale/**'],
+    ignores: ['src/locale/**', '**/*.test.ts', '**/__fixtures__/**'],
     rules: {
       'no-restricted-syntax': [
         'error',

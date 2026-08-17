@@ -13,11 +13,17 @@ picker, each with its own saved progress.
 
 The git repository directory is still named `Buchstabiene`; the project itself is `Wortwabe`.
 
-## Status: pre-implementation
+## Status
 
-`src/index.ts` is a `console.log` placeholder from the original `tsc` scaffold. **The only real
-content in this repo is `plans/`.** Milestone M0 replaces the scaffold with the Vite + Svelte
-setup described there.
+Done: **M0** (Vite + Svelte 5 setup), **M1** (engine, `src/engine/`), **M2** (dictionary,
+`data/dictionary/words.json`, 13,378 words), **M3 in progress** — `tools/puzzle/generate.ts` is
+written and tested, but no puzzle files exist yet.
+
+Next: `tools/generate-season.ts`, which writes `data/puzzles/YYYY-MM-DD.json` plus
+`index.json`, then a manual read-through of the generated solution sets. After that M4 (UI),
+M5 (picker, persistence, polish), M6 (PWA, ship).
+
+`src/App.svelte` is still the M0 placeholder — the game UI does not exist yet.
 
 Read `plans/` before starting work — it is the source of truth for every decision below:
 

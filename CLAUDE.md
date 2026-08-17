@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project
 
 **Wortwabe** — a German word puzzle (honeycomb of 7 letters, one mandatory center letter, words
-of 4+ letters, pangram bonus). An independent clone of the Spelling Bee / *Buchstabiene*
+of 4+ letters, pangram bonus). An independent clone of the Spelling Bee / _Buchstabiene_
 mechanic, built for personal use and installed as a PWA on a phone.
 
 **One puzzle per week, released Wednesday** — not daily. Earlier puzzles stay playable through a
@@ -21,14 +21,14 @@ setup described there.
 
 Read `plans/` before starting work — it is the source of truth for every decision below:
 
-| File | Content |
-| --- | --- |
-| `plans/00-overview.md` | Scope, MVP boundary, language policy |
-| `plans/01-tech-stack.md` | Stack choices and rejected alternatives |
-| `plans/02-architecture.md` | Modules, data flow, directory layout |
-| `plans/03-game-rules.md` | **Normative** rule spec — the engine's test contract |
-| `plans/04-wordlist.md` | Dictionary pipeline, puzzle generation, quality gates |
-| `plans/05-roadmap.md` | Milestones M0–M6 and open questions |
+| File                       | Content                                               |
+| -------------------------- | ----------------------------------------------------- |
+| `plans/00-overview.md`     | Scope, MVP boundary, language policy                  |
+| `plans/01-tech-stack.md`   | Stack choices and rejected alternatives               |
+| `plans/02-architecture.md` | Modules, data flow, directory layout                  |
+| `plans/03-game-rules.md`   | **Normative** rule spec — the engine's test contract  |
+| `plans/04-wordlist.md`     | Dictionary pipeline, puzzle generation, quality gates |
+| `plans/05-roadmap.md`      | Milestones M0–M6 and open questions                   |
 
 When an implementation decision contradicts a plan, update the plan in the same change.
 
@@ -38,8 +38,11 @@ The **UI is German**; **everything else is English** — code, identifiers, comm
 messages, test names, JSON keys.
 
 German user-facing strings live **only** in `src/locale/de.ts`. No German string literals
-anywhere else in the codebase. This is deliberately mechanical so it can be checked by a lint
-rule.
+anywhere else in the codebase.
+
+A `no-restricted-syntax` rule in `eslint.config.js` enforces this, but only as a heuristic: it
+flags string literals containing `äöüÄÖÜß` outside `src/locale/`. German text without umlauts
+passes it silently, so the rule is a backstop, not a proof.
 
 ## Architectural invariant
 
@@ -89,11 +92,17 @@ in-memory storage stub, not call verification.
 
 ## Commands
 
-The scaffold currently only has:
-
 ```bash
-npm run build     # tsc → dist/ (placeholder; M0 replaces this with vite build)
+npm run dev          # Vite dev server
+npm run build        # production build → dist/
+npm run preview      # serve the production build
+npm test             # vitest run
+npm run test:watch   # vitest watch mode
+npm test -- src/engine/score.test.ts        # a single test file
+npm test -- -t "pangram bonus"              # tests matching a name
+npm run typecheck    # svelte-check (types in .ts and .svelte)
+npm run lint         # eslint
+npm run format       # prettier --write
 ```
 
-After M0 the intended scripts are `dev`, `build`, `preview`, `test`, `lint`, `typecheck`, plus
-`tools/` pipeline scripts run via `tsx`. Update this section when they actually exist.
+`tools/` pipeline scripts are run directly with `tsx`, e.g. `npx tsx tools/generate-season.ts`.

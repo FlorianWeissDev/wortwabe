@@ -1,0 +1,3 @@
+# Words the source is missing, written exactly as they should be displayed
+# (nouns capitalized). One per line. Umlauts and ß are not playable, so a word
+# containing them cannot be added here.

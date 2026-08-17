@@ -1,0 +1,9 @@
+# Words removed from the generated dictionary, one per line, case-insensitive.
+# Reviewed by a human, never generated. Reasons belong in a comment above the entry.
+
+# English loans that slipped through the part-of-speech filter.
+like
+high
+deep
+keep
+week

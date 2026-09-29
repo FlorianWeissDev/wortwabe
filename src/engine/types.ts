@@ -36,20 +36,8 @@ export interface Puzzle {
   centerLetter: Letter;
   /** The six letters around the center, in canonical (unshuffled) order. */
   outerLetters: readonly Letter[];
-  /** Normalized, lowercase, ASCII. */
-  solutions: readonly string[];
-  /** Normalized word → the spelling shown to the player (nouns are capitalized). */
-  displayForms: Readonly<Record<string, string>>;
-  pangrams: readonly string[];
-  maxScore: number;
-}
-
-/** One entry of the generated puzzle catalog, enough to render the picker. */
-export interface PuzzleSummary {
-  date: PuzzleDate;
-  centerLetter: Letter;
-  outerLetters: readonly Letter[];
-  maxScore: number;
+  /** Display forms (nouns capitalized), ASCII only. The normalized key is `word.toLowerCase()`. */
+  words: readonly string[];
 }
 
 export type RejectionReason =
@@ -66,8 +54,12 @@ export type SubmitResult =
 export interface PuzzleIndex {
   puzzle: Puzzle;
   letters: ReadonlySet<Letter>;
+  /** Normalized (lowercase) solution keys. */
   solutions: ReadonlySet<string>;
+  /** Normalized key → the spelling shown to the player. */
+  displayForms: ReadonlyMap<string, string>;
   pangrams: ReadonlySet<string>;
+  maxScore: number;
 }
 
 export interface GameState {

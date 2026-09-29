@@ -221,19 +221,12 @@ export function toPuzzle(
   date: PuzzleDate,
   displayForms: ReadonlyMap<string, string>,
 ): Puzzle {
-  const forms: Record<string, string> = {};
-  for (const word of evaluation.solutions) {
-    forms[word] = displayForms.get(word) ?? word;
-  }
-
   return {
     schemaVersion: 1,
     date,
     centerLetter: evaluation.centerLetter,
     outerLetters: evaluation.outerLetters,
-    solutions: evaluation.solutions,
-    displayForms: forms,
-    pangrams: evaluation.pangrams,
-    maxScore: evaluation.maxScore,
+    // `solutions` is already sorted by key, so the file stays alphabetical regardless of case.
+    words: evaluation.solutions.map((word) => displayForms.get(word) ?? word),
   };
 }

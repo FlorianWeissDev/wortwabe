@@ -3,7 +3,6 @@ import { describe, expect, it } from 'vitest';
 import { testPuzzle } from './__fixtures__/puzzle';
 import {
   PANGRAM_BONUS,
-  computeMaxScore,
   indexPuzzle,
   isPangram,
   puzzleLetters,
@@ -40,19 +39,23 @@ describe('isPangram', () => {
   });
 });
 
-describe('totalScore and computeMaxScore', () => {
+describe('totalScore', () => {
   it('sums the scores of the words given', () => {
     expect(totalScore([], index)).toBe(0);
     expect(totalScore(['kern', 'raten'], index)).toBe(6);
     expect(totalScore(['traktieren'], index)).toBe(17);
   });
+});
 
-  it('derives the puzzle maximum from the solution set', () => {
-    expect(computeMaxScore(index)).toBe(43);
+describe('indexPuzzle', () => {
+  it('derives pangrams and the maximum score from the word list', () => {
+    expect([...index.pangrams]).toEqual(['traktieren']);
+    expect(index.maxScore).toBe(43);
   });
 
-  it('agrees with the maxScore recorded in the puzzle file', () => {
-    // The generator writes maxScore; if the two ever disagree the puzzle file is wrong.
-    expect(computeMaxScore(index)).toBe(testPuzzle.maxScore);
+  it('finds a capitalized noun by its lowercase key and keeps its display form', () => {
+    expect(index.solutions.has('krater')).toBe(true);
+    expect(index.solutions.has('Krater')).toBe(false);
+    expect(index.displayForms.get('krater')).toBe('Krater');
   });
 });

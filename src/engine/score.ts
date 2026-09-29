@@ -11,11 +11,24 @@ export function puzzleLetters(puzzle: Puzzle): Set<Letter> {
 }
 
 export function indexPuzzle(puzzle: Puzzle): PuzzleIndex {
+  const letters = puzzleLetters(puzzle);
+  const displayForms = new Map<string, string>();
+  const pangrams = new Set<string>();
+  for (const word of puzzle.words) {
+    const key = word.toLowerCase();
+    displayForms.set(key, word);
+    if (isPangram(key, letters)) {
+      pangrams.add(key);
+    }
+  }
+  const solutions = new Set(displayForms.keys());
   return {
     puzzle,
-    letters: puzzleLetters(puzzle),
-    solutions: new Set(puzzle.solutions),
-    pangrams: new Set(puzzle.pangrams),
+    letters,
+    solutions,
+    displayForms,
+    pangrams,
+    maxScore: totalScore(solutions, { pangrams }),
   };
 }
 
@@ -38,22 +51,14 @@ export function scoreWord(word: string, pangram: boolean): number {
   return pangram ? base + PANGRAM_BONUS : base;
 }
 
-export function scoreWordIn(word: string, index: PuzzleIndex): number {
+export function scoreWordIn(word: string, index: Pick<PuzzleIndex, 'pangrams'>): number {
   return scoreWord(word, index.pangrams.has(word));
 }
 
-export function totalScore(words: Iterable<string>, index: PuzzleIndex): number {
+export function totalScore(words: Iterable<string>, index: Pick<PuzzleIndex, 'pangrams'>): number {
   let total = 0;
   for (const word of words) {
     total += scoreWordIn(word, index);
   }
   return total;
-}
-
-/**
- * The score of a complete solution set. Written from the solution list rather
- * than read from the puzzle file so the generator and the game cannot disagree.
- */
-export function computeMaxScore(index: PuzzleIndex): number {
-  return totalScore(index.puzzle.solutions, index);
 }

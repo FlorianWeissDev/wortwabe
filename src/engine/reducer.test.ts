@@ -3,8 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { testPuzzle } from './__fixtures__/puzzle';
 import { rankForScore } from './rank';
 import { createGameState, reduce } from './reducer';
-import { totalScore } from './score';
+import { indexPuzzle, totalScore } from './score';
 import type { GameState } from './types';
+
+const index = indexPuzzle(testPuzzle);
 
 function typeWord(state: GameState, word: string): GameState {
   return [...word].reduce((current, letter) => reduce(current, { type: 'TYPE', letter }), state);
@@ -123,23 +125,23 @@ describe('SUBMIT', () => {
 
 describe('playing a puzzle to the end', () => {
   it('reaches the top rank once every solution is found', () => {
-    const state = testPuzzle.solutions.reduce(play, createGameState(testPuzzle));
+    const state = [...index.solutions].reduce(play, createGameState(testPuzzle));
 
-    expect(state.foundWords).toHaveLength(testPuzzle.solutions.length);
+    expect(state.foundWords).toHaveLength(index.solutions.size);
     const score = totalScore(state.foundWords, state.index);
-    expect(score).toBe(testPuzzle.maxScore);
-    expect(rankForScore(score, testPuzzle.maxScore).id).toBe('QUEEN_BEE');
+    expect(score).toBe(index.maxScore);
+    expect(rankForScore(score, index.maxScore).id).toBe('QUEEN_BEE');
   });
 
   it('falls well short of the top when only the pangram is missing', () => {
     // The pangram is worth 17 of 43 points, so missing it costs two ranks —
     // which is the intended weight of finding one.
-    const withoutPangram = testPuzzle.solutions.filter((word) => word !== 'traktieren');
+    const withoutPangram = [...index.solutions].filter((word) => word !== 'traktieren');
     const state = withoutPangram.reduce(play, createGameState(testPuzzle));
     const score = totalScore(state.foundWords, state.index);
 
     expect(score).toBe(26);
-    const rank = rankForScore(score, testPuzzle.maxScore);
+    const rank = rankForScore(score, index.maxScore);
     expect(rank.id).toBe('AMAZING');
     expect(rank.nextRank).toEqual({ id: 'GENIUS', pointsRequired: 30, pointsAway: 4 });
   });

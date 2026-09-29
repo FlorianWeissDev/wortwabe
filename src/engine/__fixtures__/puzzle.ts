@@ -12,17 +12,5 @@ export const testPuzzle: Puzzle = {
   date: '2026-08-19',
   centerLetter: 'r',
   outerLetters: ['a', 'e', 'i', 'k', 'n', 't'],
-  solutions: ['kern', 'rein', 'irre', 'raten', 'arten', 'krater', 'trainer', 'traktieren'],
-  displayForms: {
-    kern: 'Kern',
-    rein: 'rein',
-    irre: 'irre',
-    raten: 'raten',
-    arten: 'Arten',
-    krater: 'Krater',
-    trainer: 'Trainer',
-    traktieren: 'traktieren',
-  },
-  pangrams: ['traktieren'],
-  maxScore: 43,
+  words: ['Kern', 'rein', 'irre', 'raten', 'Arten', 'Krater', 'Trainer', 'traktieren'],
 };

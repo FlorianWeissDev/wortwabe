@@ -241,17 +241,18 @@ describe('toPuzzle', () => {
     expect(puzzle.date).toBe('2026-08-19');
     expect(puzzle.centerLetter).toBe('r');
     expect(puzzle.outerLetters).toHaveLength(6);
-    expect(puzzle.maxScore).toBe(evaluation.maxScore);
   });
 
   it('carries a display form for every solution', () => {
     const puzzle = toPuzzle(evaluation, '2026-08-19', displayForms);
-    expect(Object.keys(puzzle.displayForms).sort()).toEqual([...evaluation.solutions].sort());
-    expect(puzzle.displayForms['kern']).toBe('Kern');
+    expect(puzzle.words.map((word) => word.toLowerCase()).sort()).toEqual(
+      [...evaluation.solutions].sort(),
+    );
+    expect(puzzle.words).toContain('Kern');
   });
 
   it('falls back to the normalized spelling when none is known', () => {
     const puzzle = toPuzzle(evaluation, '2026-08-19', new Map());
-    expect(puzzle.displayForms['raten']).toBe('raten');
+    expect(puzzle.words).toContain('raten');
   });
 });

@@ -173,6 +173,8 @@ export interface GenerateOptions {
   seed: number;
   /** Letter sets to avoid, keyed by `letterSetKey`. */
   usedLetterSets?: ReadonlySet<string>;
+  /** Rejects a candidate board by its letter mask, e.g. for being too similar to recent boards. */
+  rejectLetterMask?: (mask: number) => boolean;
   gates?: QualityGates;
 }
 
@@ -202,7 +204,7 @@ export function generateBoard(
 
   for (const candidate of candidates) {
     const letters = maskToLetters(candidate.mask);
-    if (used.has(letterSetKey(letters))) {
+    if (used.has(letterSetKey(letters)) || options.rejectLetterMask?.(candidate.mask)) {
       continue;
     }
     for (const centerLetter of letters) {

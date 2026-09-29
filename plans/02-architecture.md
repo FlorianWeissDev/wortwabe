@@ -62,11 +62,12 @@ a rebuild and deploy.
 
 ### 3. Offline tooling (`tools/`)
 
-| Script                | Responsibility                                                                            |
-| --------------------- | ----------------------------------------------------------------------------------------- |
-| `build-dictionary.ts` | Raw source → filtered, normalized word list + display forms (see `04-wordlist.md`)        |
-| `puzzle/generate.ts`  | Pure library: pick a letter set, compute solutions, score it, reject bad puzzles          |
-| `generate-season.ts`  | Batch-generate the next N release Wednesdays, writing only `data/puzzles/YYYY-MM-DD.json` |
+| Script                | Responsibility                                                                                                    |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `build-dictionary.ts` | Raw source → filtered, normalized word list + display forms (see `04-wordlist.md`)                                |
+| `puzzle/generate.ts`  | Pure library: pick a letter set, compute solutions, score it, reject bad puzzles                                  |
+| `puzzle/season.ts`    | Pure planner: per-date seeds, no letter-set repeat within 52 puzzles                                              |
+| `generate-season.ts`  | CLI: batch-generate the next N release Wednesdays, writing only `data/puzzles/YYYY-MM-DD.json`, never overwriting |
 
 These run manually or in CI, never in the browser.
 

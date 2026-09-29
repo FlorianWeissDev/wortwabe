@@ -23,10 +23,13 @@ Done: **M0** (Vite + Svelte 5 setup), **M1** (engine, `src/engine/`), **M2** (di
 newest one.
 
 Next: the manual read-through of the generated solution sets (blocklist/allowlist fixes apply
-to future puzzles only). After that M4 (UI), M5 (picker, persistence, polish), M6 (PWA, ship —
+to future puzzles only). After that M4 (UI, in progress), M5 (picker, persistence, polish), M6 (PWA, ship —
 hand-written manifest and service worker, no plugin).
 
-`src/App.svelte` is still the M0 placeholder — the game UI does not exist yet.
+**M4 in progress:** the foundation lives in `src/app/` — `game.svelte.ts` (state wrapper over the
+engine reducer), `puzzles.ts`, `keys.ts`, `feedback.ts`, the layout in `src/App.svelte`, and
+stub components (`Hive`, `Controls`, `InputLine`, `Toast`, `RankBar`, `FoundWords`) with final
+props but plain rendering, awaiting styling. Nothing is persisted yet (M5).
 
 Read `plans/` before starting work — it is the source of truth for every decision below:
 

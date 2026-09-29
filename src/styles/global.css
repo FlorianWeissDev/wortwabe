@@ -1,27 +1,39 @@
 :root {
-  --color-bg: #fffdf7;
-  --color-surface: #ffffff;
-  --color-text: #1b1a17;
-  --color-text-muted: #6b6659;
-  --color-accent: #f2c94c;
-  --color-accent-strong: #e0a800;
-  --color-border: #e2ddd0;
+  --bg: #fffdf7;
+  --surface: #ffffff;
+  --text: #1b1a17;
+  --muted: #6b6659;
+  --accent: #f2c94c;
+  --accent-strong: #e0a800;
+  --accent-text: #e0a800;
+  --on-accent: #1b1a17;
+  --border: #e2ddd0;
+  --cell: #efe9d8;
+  --cell-press: #e6dfc9;
+  --scrim: rgba(27, 26, 23, 0.35);
+  --shadow: 0 10px 30px rgba(60, 45, 0, 0.14);
 
   --radius: 0.75rem;
-  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --font: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 
   color-scheme: light dark;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-bg: #16150f;
-    --color-surface: #201e17;
-    --color-text: #f3efe4;
-    --color-text-muted: #a8a293;
-    --color-accent: #f2c94c;
-    --color-accent-strong: #ffd968;
-    --color-border: #35322a;
+    --bg: #16150f;
+    --surface: #201e17;
+    --text: #f3efe4;
+    --muted: #a8a293;
+    --accent: #f2c94c;
+    --accent-strong: #ffd968;
+    --accent-text: #ffd968;
+    --on-accent: #1b1a17;
+    --border: #35322a;
+    --cell: #2e2b21;
+    --cell-press: #38352a;
+    --scrim: rgba(0, 0, 0, 0.55);
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   }
 }
 
@@ -38,9 +50,10 @@ body {
 }
 
 body {
-  background: var(--color-bg);
-  color: var(--color-text);
-  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  line-height: 1.4;
   /* The hive is a grid of buttons; double-tap-to-zoom would fight rapid tapping. */
   touch-action: manipulation;
   -webkit-text-size-adjust: 100%;
@@ -49,4 +62,10 @@ body {
 button {
   font: inherit;
   color: inherit;
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 3px solid var(--accent-strong);
+  outline-offset: 2px;
 }

@@ -8,19 +8,19 @@ bundle size, offline behaviour and low maintenance burden the things worth optim
 
 ## Stack at a glance
 
-| Concern           | Choice                                                                | Why                                                                               |
-| ----------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| Language          | TypeScript (strict)                                                   | The rule engine benefits from exhaustive union types                              |
-| Build             | **Vite 7**                                                            | Fast dev server, static output, first-class Svelte + PWA plugins                  |
-| UI                | **Svelte 5** (runes)                                                  | Compiler, not runtime: ~3 kB. Scoped CSS, transitions and `animate:flip` built in |
-| Styling           | Plain CSS in component `<style>` blocks + a few CSS custom properties | Svelte scopes it automatically; no Tailwind needed at this size                   |
-| State             | Engine reducer + `$state` runes                                       | Game state is one object driven by one reducer                                    |
-| Offline / install | **`vite-plugin-pwa`** (Workbox)                                       | Manifest, service worker, precached puzzle files — the phone use case             |
-| Persistence       | `localStorage`, versioned schema                                      | Per-day progress, no backend                                                      |
-| Offline tooling   | Node scripts in `tools/`, run via `tsx`                               | Dictionary and puzzle generation are build-time jobs                              |
-| Unit tests        | **Vitest**                                                            | Same transform pipeline as Vite, zero extra config                                |
-| Lint/format       | ESLint (flat config) + Prettier, with `prettier-plugin-svelte`        | Standard                                                                          |
-| Hosting           | Any static host or a personal server                                  | Output is `index.html` + assets + puzzle JSON                                     |
+| Concern           | Choice                                                                                                                                 | Why                                                                               |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| Language          | TypeScript (strict)                                                                                                                    | The rule engine benefits from exhaustive union types                              |
+| Build             | **Vite 8**                                                                                                                             | Fast dev server, static output, first-class Svelte support                        |
+| UI                | **Svelte 5** (runes)                                                                                                                   | Compiler, not runtime: ~3 kB. Scoped CSS, transitions and `animate:flip` built in |
+| Styling           | Plain CSS in component `<style>` blocks + a few CSS custom properties                                                                  | Svelte scopes it automatically; no Tailwind needed at this size                   |
+| State             | Engine reducer + `$state` runes                                                                                                        | Game state is one object driven by one reducer                                    |
+| Offline / install | Hand-written `manifest.webmanifest` + ~30-line `sw.js`, no plugin                                                                      | Installable and offline-capable; a single static page needs nothing heavier       |
+| Persistence       | `localStorage`, versioned schema                                                                                                       | Per-puzzle progress, no backend                                                   |
+| Offline tooling   | Node scripts in `tools/`, run via `tsx`                                                                                                | Dictionary and puzzle generation are build-time jobs                              |
+| Unit tests        | **Vitest**                                                                                                                             | Same transform pipeline as Vite, zero extra config                                |
+| Lint/format       | Prettier + `prettier-plugin-svelte`; no ESLint — `svelte-check` + strict TS cover correctness, a Vitest guard enforces the locale rule | Smaller, focused toolchain                                                        |
+| Hosting           | Any static host or a personal server                                                                                                   | Output is `index.html` + bundled assets (puzzles included)                        |
 
 **No backend, no database, no accounts.** The whole game is static files plus `localStorage`.
 
@@ -48,6 +48,13 @@ reversible at the cost of rewriting the components only.
   and cacheable by a service worker forever.
 - **Runtime dictionary lookup via API** — requires a backend and breaks offline play. The
   solution set for one puzzle is a few kilobytes; ship it with the puzzle.
+- **`vite-plugin-pwa`** — Workbox is heavy for a single static page. A hand-written manifest and
+  a ~30-line service worker cover the need.
+- **Runtime puzzle fetching** — bundling the puzzle files with the app (`import.meta.glob`) is
+  simpler: no loading or network-error states, and offline play comes for free.
+- **ESLint** — 6 packages (`eslint`, `@eslint/js`, `typescript-eslint`, `eslint-plugin-svelte`,
+  `svelte-eslint-parser`, `globals`) and significant toolchain complexity for one project-specific
+  rule; a Vitest test is simpler and serves the same purpose.
 
 ## Notable dependency choices
 
@@ -55,10 +62,3 @@ reversible at the cost of rewriting the components only.
   progress bar.
 - **`tsx`** for running TypeScript tooling scripts directly, so the pipeline shares types with
   the app.
-- **Zod** (optional, dev-only) to validate puzzle JSON at load time — catches a malformed
-  generated puzzle immediately rather than as a confusing runtime bug.
-
-## Repo changes this implies
-
-The current scaffold (`tsc` → `dist`, CommonJS, `src/index.ts`) is replaced by the Vite + Svelte
-layout. `package.json` becomes `wortwabe`, `"type": "module"`, build script `vite build`.

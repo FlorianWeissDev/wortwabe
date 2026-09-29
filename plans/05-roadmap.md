@@ -5,12 +5,16 @@ word list) is confronted early rather than after the UI is built.
 
 ## M0 — Project setup
 
+**Status: done.**
+
 - Replace the `tsc` scaffold with Vite + Svelte 5 + TypeScript, ESM, strict mode.
-- Rename the package to `wortwabe`; add Vitest, ESLint, Prettier (+ `prettier-plugin-svelte`).
+- Rename the package to `wortwabe`; add Vitest, Prettier (+ `prettier-plugin-svelte`), and a Vitest guard for the locale rule.
 - Directory skeleton per `02-architecture.md`; `.gitignore` for `dist/` and `node_modules/`.
 - **Done when:** `npm run dev`, `npm run test`, `npm run build` all work on an empty app shell.
 
 ## M1 — Engine (no UI)
+
+**Status: done.**
 
 - `types`, `normalize`, `validate`, `score`, `rank`, `schedule`, `reducer`.
 - Tests per the testing approach in `02-architecture.md` — real logic only, no mock assertions.
@@ -20,15 +24,17 @@ word list) is confronted early rather than after the UI is built.
 
 ## M2 — Dictionary pipeline
 
+**Status: done.**
+
 - `tools/build-dictionary.ts` end to end, `SOURCES.md` with attribution.
-- Frequency cutoff tuned by inspecting output samples; record the surviving word count after the
-  umlaut exclusion.
+- Source: CC0 `open-crossword-bank`, filtered by POS, length and a–z; 13,347 words survive.
 - **Done when:** `data/dictionary/words.json` exists and a spot check of 50 random entries turns
   up no proper nouns and no unrecognizable words.
 
 ## M3 — Puzzle generation
 
-- `tools/generate-puzzle.ts` with the quality gates, plus `generate-season.ts` and `index.json`.
+- `tools/puzzle/generate.ts` with the quality gates, plus `generate-season.ts` writing `data/puzzles/YYYY-MM-DD.json` in the slim format (no `index.json`).
+- Coverage probe test (`tools/dictionary/coverage.test.ts`, ≥ 95 % of ~200 common words); function words go into `allowlist.txt`.
 - Generate ~26 Wednesdays (half a year) and read through them manually — this is the real test
   of M2.
 - **Done when:** the committed puzzle files all pass the gates and look fun.
@@ -42,7 +48,7 @@ word list) is confronted early rather than after the UI is built.
 ## M5 — Puzzle picker, persistence & polish
 
 - `localStorage` progress per puzzle, restore on reload, Wednesday rollover handling.
-- `PuzzlePicker` over `index.json` with per-puzzle rank; deep link to a picked date.
+- `PuzzlePicker` over the bundled puzzles with per-puzzle rank; deep link is a `?date=YYYY-MM-DD` query parameter.
 - Rules dialog, responsive layout, focus management and screen-reader labels, the three
   animations from the animation budget.
 - **Done when:** progress survives reload, switching between weeks keeps each puzzle's progress
@@ -50,8 +56,9 @@ word list) is confronted early rather than after the UI is built.
 
 ## M6 — PWA & ship
 
-- `vite-plugin-pwa`: manifest, icons, service worker precaching the shell, `index.json` and all
-  released puzzle files.
+- Hand-written `public/manifest.webmanifest`, icons and `public/sw.js` (network-first for
+  navigations, cache-first for the rest), registered from `src/main.ts`. No precache of puzzle
+  files needed — they are bundled.
 - Verify install-to-home-screen and offline play on an actual phone, not just DevTools.
 - Static hosting; README in English.
 - **Done when:** the app is installed on the phone and today's puzzle plays in airplane mode.
@@ -59,12 +66,13 @@ word list) is confronted early rather than after the UI is built.
 ## Post-MVP backlog
 
 Share card · streak statistics · hint system · difficulty balancing across weeks ·
-Playwright E2E · sound.
+Playwright E2E · sound · log `NOT_A_WORD` attempts locally plus a „copy rejected words" action
+to feed the allowlist.
 
 ## Open questions
 
 1. **Scoring and rank thresholds** — currently NYT-derived assumptions; worth comparing against
    the original before the numbers feel canonical.
-2. **Frequency source licensing** — settle before committing derived data (M2).
+2. ~~**Frequency source licensing**~~ — resolved: CC0 via `open-crossword-bank`.
 3. **Puzzle supply** — how far ahead to generate, and how the "you have caught up" state reads
    in German when the app runs past the newest generated Wednesday. Decide during M3.

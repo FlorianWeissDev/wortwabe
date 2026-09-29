@@ -7,51 +7,57 @@ The word list decides whether the game is delightful or infuriating. Two failure
 - **Too strict** — the player types an obviously real German word and gets „Kein Wort in der
   Liste". This is the more damaging failure; it makes the game feel broken.
 
-## Source candidates
+## Source
 
-| Source                                     | License                              | Assessment                                                                                                                                   |
-| ------------------------------------------ | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| **igerman98 / hunspell `de_DE`**           | GPL/LGPL/MPL tri-license             | **Primary.** Broad coverage, actively maintained, ships as base words + affix rules that must be _unmunched_ into full forms                 |
-| **DWDS / Leipzig Corpora frequency lists** | CC BY-SA / CC BY-NC (varies per set) | **Frequency signal only** — used to rank and cut, not as the word source. License per dataset must be checked before committing derived data |
-| **German Wiktionary dump**                 | CC BY-SA 3.0                         | Fallback for display forms and part-of-speech tags; heavy to process                                                                         |
-| ZEIT's own list                            | —                                    | **Never.** Not scraped, not referenced                                                                                                       |
+The word source is the **CC0** npm package `open-crossword-bank` (German enriched subset, ~18k
+entries carrying part-of-speech tags). CC0 means the generated dictionary and puzzle files ship
+without conditions. Origin, licensing and known limitations are recorded in
+`data/dictionary/SOURCES.md`.
 
-Licenses of whatever we ship get recorded in `data/dictionary/SOURCES.md` with attribution.
+hunspell `de_DE` was considered and rejected for now: better inflection coverage, but GPL and it
+needs unmunching. ZEIT's own list is **never** used — not scraped, not referenced.
 
-## Pipeline (`tools/build-dictionary.ts`)
+## Pipeline (`tools/build-dictionary.ts` + `tools/dictionary/filters.ts`)
 
 ```
-raw source
-  → unmunch affixes into surface forms
-  → drop: proper nouns, abbreviations, hyphenated, apostrophes, non-letter chars
-  → drop: any word containing ä, ö, ü or ß   (see 03-game-rules.md)
-  → drop: length < 4
-  → normalize (lowercase) → key
-  → keep the most common display form per key (Käse, not käse/KÄSE)
-  → join with frequency list; drop below cutoff
-  → apply manual allowlist / blocklist
-  → emit data/dictionary/words.json  { key: displayForm }
+open-crossword-bank (German enriched subset)
+  → keep POS: noun, verb, adjective, adverb
+  → keep length ≥ 4
+  → keep a–z only   (drops every word with ä, ö, ü, ß — see 03-game-rules.md)
+  → drop ß-origin keys (source uppercases ß to SS): clue-text evidence + eszett-stems.txt
+  → display form: nouns capitalized, everything else lowercase
+  → apply allowlist.txt / blocklist.txt
+  → emit data/dictionary/words.json  { key: displayForm }   (13,347 words)
 ```
 
 Two hand-maintained files sit at the end of the pipeline and are the main quality lever over
 time:
 
-- `data/dictionary/allowlist.txt` — words players legitimately tried that the source lacks.
-- `data/dictionary/blocklist.txt` — slurs, unpleasant surprises, and technically-valid-but-absurd
-  entries. Reviewed by a human, never generated.
+- `data/dictionary/allowlist.txt` — words players legitimately tried that the source lacks,
+  including function words (see Coverage).
+- `data/dictionary/eszett-stems.txt` — hand-curated substrings (in ss form) that always come from
+  ß. Applied to source entries only, never to the allowlist. Each stem must not match a genuine
+  `ss` word (_aussenden_, _kreissparkasse_).
+- `data/dictionary/blocklist.txt` — proper nouns that leak through, slurs, unpleasant surprises,
+  and technically-valid-but-absurd entries. Reviewed by a human, never generated.
 
-**Frequency cutoff** is a tunable knob, not a fixed number. Start permissive, then tighten by
-inspecting generated puzzles: if a puzzle's solution list contains words we cannot recognize,
-the cutoff is too low.
+### Coverage
+
+A **coverage probe** (`tools/dictionary/coverage.test.ts`) guards against the most damaging
+failure, a real word being rejected. It checks ~200 common German words in common inflections
+against the built dictionary, with a target hit rate of **≥ 95 %**.
+
+Function words — prepositions, conjunctions, pronouns, articles, numerals (e.g. _seit_, _oder_,
+_eine_, _zehn_, _dies_) — are dropped by the POS filter, so they are added via `allowlist.txt`.
+
+If coverage stays poor, reconsider the source later.
 
 ### Size impact of the umlaut exclusion
 
 Dropping every word with ä/ö/ü/ß is a large cut — plurals (_Bäume_), comparatives (_größer_) and
-many common stems disappear. Measure the surviving word count at the end of M2: if it is too
-small to satisfy the puzzle quality gates below, the lever to pull first is the frequency cutoff,
-not the umlaut rule.
+many common stems disappear. The surviving 13,347 words still satisfy the quality gates below.
 
-## Puzzle generation (`tools/generate-puzzle.ts`)
+## Puzzle generation (`tools/puzzle/generate.ts`)
 
 1. **Candidate pangrams:** every dictionary word with **exactly 7 distinct letters**. This
    guarantees each puzzle has at least one pangram.
@@ -72,14 +78,16 @@ not the umlaut rule.
 | Letter set              | no repeat within the last 52 puzzles | Avoids déjà-vu (a year at one per week)                              |
 | Center letter           | not `q`/`y`/`x`                      | Too restrictive in German                                            |
 
+Measured: **1,163 letter sets** pass the gates — about 22 years of weekly puzzles.
+
 Generation is deterministic given a seed, so a puzzle set is reproducible from the seed + the
 dictionary version.
 
 ### Difficulty signal (post-MVP)
 
-Rate a puzzle by average word frequency and pangram obscurity, then spread difficulty evenly
-across consecutive weeks instead of letting the seed cluster three hard ones in a row. Nice to
-have, not v1.
+Rate a puzzle by pangram obscurity and word familiarity, then spread difficulty evenly across
+consecutive weeks instead of letting the seed cluster three hard ones in a row. Nice to have, not
+v1.
 
 ## Regeneration policy
 

@@ -43,42 +43,45 @@ One file per **release Wednesday**, generated ahead of time and committed. Shape
   "date": "2026-08-19", // always a Wednesday
   "centerLetter": "r",
   "outerLetters": ["a", "e", "i", "k", "n", "t"],
-  "solutions": ["kanten", "kerne", "..."], // normalized, lowercase, ASCII only
-  "displayForms": { "kanten": "Kanten" }, // capitalization for nouns
-  "pangrams": ["..."],
-  "maxScore": 214,
+  "words": ["Kanten", "kerne", "..."], // display forms: nouns capitalized, ASCII only
 }
 ```
+
+`words` holds display forms; the normalized key is `word.toLowerCase()`. Pangrams, `maxScore` and
+the key → display-form map are **derived** by the engine's `indexPuzzle()` and never stored —
+"derived state is never stored" applies to puzzle files too.
 
 The solution set ships with the puzzle. It is trivially readable by a curious player — that is
 true of the original too, and not worth building a backend to prevent.
 
-Alongside them, `data/puzzles/index.json` is a generated catalog — `[{ date, centerLetter,
-outerLetters, maxScore }]`, sorted newest first. The picker renders from this without fetching
-every puzzle, and the app fetches a single puzzle file only when it is actually opened.
+Puzzles are **bundled, not fetched**: the app loads them with
+`import.meta.glob('/data/puzzles/*.json', { eager: true })`, and the file names are the dates.
+There is no `index.json`, no runtime fetch and no loading or network-error states. Future-dated
+files are in the bundle too; `schedule.ts` is what keeps them unselectable. Adding puzzles means
+a rebuild and deploy.
 
 ### 3. Offline tooling (`tools/`)
 
-| Script                | Responsibility                                                                     |
-| --------------------- | ---------------------------------------------------------------------------------- |
-| `build-dictionary.ts` | Raw source → filtered, normalized word list + display forms (see `04-wordlist.md`) |
-| `generate-puzzle.ts`  | Pick a letter set, compute solutions, score it, reject bad puzzles                 |
-| `generate-season.ts`  | Batch-generate the next N release Wednesdays and rewrite `index.json`              |
+| Script                | Responsibility                                                                            |
+| --------------------- | ----------------------------------------------------------------------------------------- |
+| `build-dictionary.ts` | Raw source → filtered, normalized word list + display forms (see `04-wordlist.md`)        |
+| `puzzle/generate.ts`  | Pure library: pick a letter set, compute solutions, score it, reject bad puzzles          |
+| `generate-season.ts`  | Batch-generate the next N release Wednesdays, writing only `data/puzzles/YYYY-MM-DD.json` |
 
 These run manually or in CI, never in the browser.
 
 ### 4. UI (`src/app/`) — Svelte 5 components
 
-| Component             | Notes                                                                                                                        |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| `Hive.svelte`         | Seven hexagons (CSS `clip-path`), center letter visually distinct, click + keyboard. Shuffle uses `animate:flip`             |
-| `InputLine.svelte`    | The word being typed, with a caret; center letter highlighted inside the word                                                |
-| `Controls.svelte`     | Löschen / Mischen / Eingeben                                                                                                 |
-| `FoundWords.svelte`   | Collapsible on mobile, alphabetically sorted, pangrams marked                                                                |
-| `RankBar.svelte`      | Progress ladder with the current German rank label                                                                           |
-| `Toast.svelte`        | Transient feedback, driven by the last `SubmitResult`                                                                        |
-| `RulesDialog.svelte`  | German rules explanation, opened from the header                                                                             |
-| `PuzzlePicker.svelte` | Lists released puzzles newest first, marks the current week and shows per-puzzle rank; future dates are absent, not disabled |
+| Component             | Notes                                                                                                                                                          |
+| --------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `Hive.svelte`         | Seven hexagons (CSS `clip-path`), center letter visually distinct, click + keyboard. Shuffle uses `animate:flip`                                               |
+| `InputLine.svelte`    | The word being typed, with a caret; center letter highlighted inside the word                                                                                  |
+| `Controls.svelte`     | Löschen / Mischen / Eingeben                                                                                                                                   |
+| `FoundWords.svelte`   | Collapsible on mobile, alphabetically sorted, pangrams marked                                                                                                  |
+| `RankBar.svelte`      | Progress ladder with the current German rank label                                                                                                             |
+| `Toast.svelte`        | Transient feedback, driven by the last `SubmitResult`                                                                                                          |
+| `RulesDialog.svelte`  | German rules explanation, opened from the header                                                                                                               |
+| `PuzzlePicker.svelte` | Renders from the bundled puzzles: lists released puzzles newest first, marks the current week and shows per-puzzle rank; future dates are absent, not disabled |
 
 State lives in a single `$state` object holding the engine's `GameState`; components receive it
 as props and dispatch actions upward. Derived values (score, rank, progress) are `$derived` calls
@@ -88,11 +91,15 @@ Animation budget: word-accepted flash, shuffle transition, rank-up pulse. Nothin
 
 ### 4a. PWA shell
 
-`vite-plugin-pwa` in `generateSW` mode: web app manifest (name, icons, `display: standalone`,
-portrait), and a service worker precaching the app shell, `index.json` and every released puzzle
-file — a weekly cadence means the whole back catalog is small enough to hold offline. Puzzles are
-immutable once published, so they are cache-first with no revalidation; the app shell uses the
-plugin's default versioned precache.
+Hand-written, no `vite-plugin-pwa`/Workbox:
+
+- `public/manifest.webmanifest` — name, icons, `display: standalone`, portrait.
+- `public/sw.js` (~30 lines) — **network-first for navigations** (so a new deploy is picked up),
+  **cache-first for everything else** (hashed assets and the icons), under a versioned cache name
+  that is bumped to evict old caches.
+- ~3 lines in `src/main.ts` registering the worker.
+
+Puzzles are part of the JS bundle, so no separate precache of puzzle files is needed.
 
 ### 5. Persistence (`src/storage/`)
 
@@ -108,8 +115,8 @@ disturbs the current week's progress. The picker reads all entries to show a ran
 
 A single flat object of German strings, including rank names and rejection messages. Components
 import from here; no German string literals anywhere else in the codebase. This keeps the
-"artifacts in English, UI in German" rule mechanically enforceable (a lint rule can check for
-non-ASCII string literals outside `locale/`).
+"artifacts in English, UI in German" rule mechanically enforceable (a Vitest guard in
+`src/locale/locale-guard.test.ts` checks for non-ASCII string literals outside `locale/`).
 
 ## Testing approach
 
@@ -152,17 +159,18 @@ wortwabe/
 │   ├── locale/
 │   ├── App.svelte
 │   └── main.ts
-├── public/
+├── public/                 # manifest.webmanifest, sw.js, icons
 └── index.html
 ```
 
 ## Data flow at runtime
 
-1. App boots and loads `data/puzzles/index.json` (from the service worker cache when offline).
-2. `schedule.ts` resolves the current puzzle date from "now" in Europe/Berlin; the URL may
-   override it with an explicitly picked date, which is rejected if not yet released.
-3. Fetches that one puzzle file.
-4. Loads saved `foundWords` for that date from `localStorage`.
-5. Engine replays them to derive score and rank — no stored derived state.
-6. User input dispatches actions to the reducer; every accepted word triggers a persist.
-7. No network traffic after load, except fetching another puzzle when one is picked.
+1. App boots with every puzzle already bundled (`import.meta.glob`, no fetch).
+2. `schedule.ts` picks the date from the bundled list: the current puzzle from "now" in
+   Europe/Berlin, or an explicit `?date=YYYY-MM-DD` query parameter resolved by
+   `resolvePuzzleDate` (no router), rejected if not yet released.
+3. Loads saved `foundWords` for that date from `localStorage`.
+4. Engine replays them and derives score and rank (and, via `indexPuzzle()`, pangrams and
+   `maxScore`) — no stored derived state.
+5. User input dispatches actions to the reducer; every accepted word triggers a persist.
+6. No network traffic after load.

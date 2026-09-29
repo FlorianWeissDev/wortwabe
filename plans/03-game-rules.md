@@ -56,9 +56,16 @@ transliterated form. For a puzzle game, predictability beats vocabulary size.
 umlauted plural or comparative. Puzzle quality gates in `04-wordlist.md` compensate by requiring
 a minimum solution count.
 
+**ß-origin words are excluded too, and that needs detection.** The word source stores words in
+uppercase, where ß becomes `SS`: _Straße_ arrives as `STRASSE` and looks exactly like _Wasser_ or
+_Klasse_. Left in, such words would force the player to type `s` twice for a word with one ß.
+The dictionary build therefore detects and removes them (`04-wordlist.md`): a key is dropped if
+the source's clue texts (normal mixed-case sentences) spell it with ß, or if it contains an entry
+of the curated `data/dictionary/eszett-stems.txt` (_schliess_, _strasse_, _gross_ …). Genuine
+`ss` (_Wasser_, _Klasse_) stays; a key with clue evidence of genuine `ss` is never dropped.
+Detection is heuristic — a few ß-origin words without clue evidence can remain until a stem is added.
+
 Typing `ä` on a physical keyboard is simply ignored at input time, like any other off-board key.
-The engine keeps the filter behind `umlautMode: "exclude" | "expand"` so the decision is
-reversible, but only `exclude` is implemented and tested in v1.
 
 ## Scoring **[assumption — NYT-derived]**
 
@@ -68,7 +75,7 @@ reversible, but only `exclude` is implemented and tested in v1.
 | 5+ letters                         | 1 point per letter  |
 | Pangram (uses all 7 board letters) | word points **+ 7** |
 
-`maxScore` is the sum over the whole solution set and is stored in the puzzle file.
+`maxScore` is the sum over the whole solution set. The engine computes it from the word list; it is not stored in the puzzle file.
 
 ## Ranks
 
@@ -93,12 +100,13 @@ the original's ladder may differ in count and naming.
 
 ## Word eligibility (what the dictionary may contain)
 
-Included: common nouns, verbs (all forms), adjectives, adverbs, and the inflected forms a
-German speaker would reasonably try.
+Included: common nouns, verbs (all forms), adjectives, adverbs, function words (prepositions,
+conjunctions, pronouns, articles, numerals), and the inflected forms a German speaker would
+reasonably try.
 
 Excluded: proper nouns, abbreviations and acronyms, words needing a hyphen or apostrophe,
-single-letter-repeated interjections, offensive slurs, and words below the frequency cutoff
-defined in `04-wordlist.md`.
+single-letter-repeated interjections, offensive slurs, and anything the dictionary pipeline in
+`04-wordlist.md` filters out.
 
 ## Input handling
 

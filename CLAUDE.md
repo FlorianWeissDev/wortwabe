@@ -16,12 +16,14 @@ The git repository directory is still named `Buchstabiene`; the project itself i
 ## Status
 
 Done: **M0** (Vite + Svelte 5 setup), **M1** (engine, `src/engine/`), **M2** (dictionary,
-`data/dictionary/words.json`, 13,378 words), **M3 in progress** — `tools/puzzle/generate.ts` is
+`data/dictionary/words.json`, 13,347 words), **M3 in progress** — `tools/puzzle/generate.ts` is
 written and tested, but no puzzle files exist yet.
 
-Next: `tools/generate-season.ts`, which writes `data/puzzles/YYYY-MM-DD.json` plus
-`index.json`, then a manual read-through of the generated solution sets. After that M4 (UI),
-M5 (picker, persistence, polish), M6 (PWA, ship).
+Next: `tools/generate-season.ts`, which writes only `data/puzzles/YYYY-MM-DD.json` (no
+`index.json`; the app bundles the puzzles via `import.meta.glob`). Puzzle files use the slim
+format: `words` as display forms, with pangrams and `maxScore` derived by the engine. Then a
+manual read-through of the generated solution sets. After that M4 (UI), M5 (picker,
+persistence, polish), M6 (PWA, ship — hand-written manifest and service worker, no plugin).
 
 `src/App.svelte` is still the M0 placeholder — the game UI does not exist yet.
 
@@ -46,9 +48,9 @@ messages, test names, JSON keys.
 German user-facing strings live **only** in `src/locale/de.ts`. No German string literals
 anywhere else in the codebase.
 
-A `no-restricted-syntax` rule in `eslint.config.js` enforces this, but only as a heuristic: it
+A Vitest guard in `src/locale/locale-guard.test.ts` enforces this, but only as a heuristic: it
 flags string literals containing `äöüÄÖÜß` outside `src/locale/`. German text without umlauts
-passes it silently, so the rule is a backstop, not a proof.
+passes it silently, so the guard is a backstop, not a proof.
 
 ## Architectural invariant
 
@@ -74,8 +76,7 @@ Two consequences worth remembering:
 
 - **Umlauts and ß are excluded, not transliterated.** Words containing ä/ö/ü/ß are filtered out
   of the dictionary entirely and can never be solutions; typing `ä` is ignored like any other
-  off-board key. The `umlautMode: "exclude" | "expand"` flag exists, but only `exclude` is
-  implemented and tested. Rationale and cost: `plans/03-game-rules.md`.
+  off-board key. Rationale and cost: `plans/03-game-rules.md`.
 - **Scoring and rank thresholds are NYT-derived assumptions**, marked `[assumption]` in the rule
   spec. They are configurable on purpose — do not hardcode them into UI components.
 - **The release boundary is Wednesday 00:00 `Europe/Berlin`** — a fixed zone, not UTC and not the
@@ -107,7 +108,6 @@ npm run test:watch   # vitest watch mode
 npm test -- src/engine/score.test.ts        # a single test file
 npm test -- -t "pangram bonus"              # tests matching a name
 npm run typecheck    # svelte-check (types in .ts and .svelte)
-npm run lint         # eslint
 npm run format       # prettier --write
 ```
 

@@ -12,26 +12,19 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "typecheck": "svelte-check --tsconfig ./tsconfig.json",
-    "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
   "devDependencies": {
-    "@eslint/js": "^10.0.1",
     "@sveltejs/vite-plugin-svelte": "^7.3.0",
     "@types/node": "^26.2.0",
-    "eslint": "^10.8.1",
-    "eslint-plugin-svelte": "^3.23.0",
-    "globals": "^17.11.0",
     "open-crossword-bank": "^1.0.2",
     "prettier": "^3.9.6",
     "prettier-plugin-svelte": "^4.1.1",
     "svelte": "^5.56.9",
     "svelte-check": "^4.7.6",
-    "svelte-eslint-parser": "^1.8.1",
     "tsx": "^4.23.12",
     "typescript": "^6.0.3",
-    "typescript-eslint": "^8.67.0",
     "vite": "^8.2.1",
     "vitest": "^4.1.10"
   }

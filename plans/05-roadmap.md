@@ -27,13 +27,13 @@ word list) is confronted early rather than after the UI is built.
 **Status: done.**
 
 - `tools/build-dictionary.ts` end to end, `SOURCES.md` with attribution.
-- Source: CC0 `open-crossword-bank`, filtered by POS, length and a–z; 13,347 words survive.
+- Source: CC0 `open-crossword-bank`, filtered by POS, length and a–z; 13,281 words survive.
 - **Done when:** `data/dictionary/words.json` exists and a spot check of 50 random entries turns
   up no proper nouns and no unrecognizable words.
 
 ## M3 — Puzzle generation
 
-- `tools/puzzle/generate.ts` with the quality gates, plus `generate-season.ts` writing `data/puzzles/YYYY-MM-DD.json` in the slim format (no `index.json`).
+- `tools/puzzle/generate.ts` with the quality gates, plus `generate-season.ts` (logic in `tools/puzzle/season.ts`) writing `data/puzzles/YYYY-MM-DD.json` in the slim format (no `index.json`). Done: `npm run generate:season` produced 26 puzzles, 2026-09-23 through 2027-03-17. Boards also may not share more than 5 letters with any of the previous 8 puzzles. Existing files are never overwritten; a rerun continues after the newest one.
 - Coverage probe test (`tools/dictionary/coverage.test.ts`, ≥ 95 % of ~200 common words); function words go into `allowlist.txt`.
 - Generate ~26 Wednesdays (half a year) and read through them manually — this is the real test
   of M2.

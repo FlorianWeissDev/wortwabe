@@ -16,14 +16,15 @@ The git repository directory is still named `Buchstabiene`; the project itself i
 ## Status
 
 Done: **M0** (Vite + Svelte 5 setup), **M1** (engine, `src/engine/`), **M2** (dictionary,
-`data/dictionary/words.json`, 13,347 words), **M3 in progress** — `tools/puzzle/generate.ts` is
-written and tested, but no puzzle files exist yet.
+`data/dictionary/words.json`, 13,281 words), **M3 generation** — `tools/generate-season.ts`
+(logic in `tools/puzzle/season.ts`) wrote `data/puzzles/YYYY-MM-DD.json` for 2026-09-23 through
+2027-03-17 (26 puzzles, slim format, no `index.json`; the app bundles them via
+`import.meta.glob`). Published puzzle files are never overwritten; a rerun continues after the
+newest one.
 
-Next: `tools/generate-season.ts`, which writes only `data/puzzles/YYYY-MM-DD.json` (no
-`index.json`; the app bundles the puzzles via `import.meta.glob`). Puzzle files use the slim
-format: `words` as display forms, with pangrams and `maxScore` derived by the engine. Then a
-manual read-through of the generated solution sets. After that M4 (UI), M5 (picker,
-persistence, polish), M6 (PWA, ship — hand-written manifest and service worker, no plugin).
+Next: the manual read-through of the generated solution sets (blocklist/allowlist fixes apply
+to future puzzles only). After that M4 (UI), M5 (picker, persistence, polish), M6 (PWA, ship —
+hand-written manifest and service worker, no plugin).
 
 `src/App.svelte` is still the M0 placeholder — the game UI does not exist yet.
 
@@ -109,6 +110,7 @@ npm test -- src/engine/score.test.ts        # a single test file
 npm test -- -t "pangram bonus"              # tests matching a name
 npm run typecheck    # svelte-check (types in .ts and .svelte)
 npm run format       # prettier --write
+npm run generate:season -- --weeks 26 --seed N   # append new puzzles to data/puzzles/
 ```
 
 `tools/` pipeline scripts are run directly with `tsx`, e.g. `npx tsx tools/generate-season.ts`.

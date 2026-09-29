@@ -27,7 +27,7 @@ open-crossword-bank (German enriched subset)
   → drop ß-origin keys (source uppercases ß to SS): clue-text evidence + eszett-stems.txt
   → display form: nouns capitalized, everything else lowercase
   → apply allowlist.txt / blocklist.txt
-  → emit data/dictionary/words.json  { key: displayForm }   (13,347 words)
+  → emit data/dictionary/words.json  { key: displayForm }   (13,281 words)
 ```
 
 Two hand-maintained files sit at the end of the pipeline and are the main quality lever over
@@ -55,7 +55,7 @@ If coverage stays poor, reconsider the source later.
 ### Size impact of the umlaut exclusion
 
 Dropping every word with ä/ö/ü/ß is a large cut — plurals (_Bäume_), comparatives (_größer_) and
-many common stems disappear. The surviving 13,347 words still satisfy the quality gates below.
+many common stems disappear. The surviving 13,281 words still satisfy the quality gates below.
 
 ## Puzzle generation (`tools/puzzle/generate.ts`)
 
@@ -69,14 +69,15 @@ many common stems disappear. The surviving 13,347 words still satisfy the qualit
 
 ### Quality gates
 
-| Gate                    | Target                               | Reason                                                               |
-| ----------------------- | ------------------------------------ | -------------------------------------------------------------------- |
-| Solution count          | 30–90                                | A puzzle has to carry a whole week, so aim higher than a daily would |
-| Pangram count           | 1–4                                  | At least one, but not a giveaway                                     |
-| `maxScore`              | 80–350                               | Keeps rank thresholds meaningful                                     |
-| Share of 4-letter words | ≤ 60 %                               | Otherwise the puzzle is padding                                      |
-| Letter set              | no repeat within the last 52 puzzles | Avoids déjà-vu (a year at one per week)                              |
-| Center letter           | not `q`/`y`/`x`                      | Too restrictive in German                                            |
+| Gate                    | Target                                                 | Reason                                                               |
+| ----------------------- | ------------------------------------------------------ | -------------------------------------------------------------------- |
+| Solution count          | 30–90                                                  | A puzzle has to carry a whole week, so aim higher than a daily would |
+| Pangram count           | 1–4                                                    | At least one, but not a giveaway                                     |
+| `maxScore`              | 80–350                                                 | Keeps rank thresholds meaningful                                     |
+| Share of 4-letter words | ≤ 60 %                                                 | Otherwise the puzzle is padding                                      |
+| Letter set              | no repeat within the last 52 puzzles                   | Avoids déjà-vu (a year at one per week)                              |
+| Similarity              | ≤ 5 shared letters with each of the previous 8 puzzles | Avoids weeks that feel like the same board with one letter swapped   |
+| Center letter           | not `q`/`y`/`x`                                        | Too restrictive in German                                            |
 
 Measured: **1,163 letter sets** pass the gates — about 22 years of weekly puzzles.
 

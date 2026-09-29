@@ -35,5 +35,8 @@ effective quality filter available, and the reason the base 90k list is not used
   odd in isolation, harmless in play.
 - **Naturalized loanwords are kept** (*Couch*, *Account*, *Atelier*, *Western*). Deliberate — they
   are ordinary German usage.
+- The source uppercases words, turning ß into SS. ß-origin words are removed by clue-text
+  evidence plus `eszett-stems.txt`; the detection is heuristic, so a few ß-origin words
+  (mostly rare compounds without clue evidence) may remain.
 - Umlauts and ß are excluded by the game's rules, which removes a meaningful slice of German
   vocabulary. See `plans/03-game-rules.md`.

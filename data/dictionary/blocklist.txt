@@ -7,3 +7,15 @@ high
 deep
 keep
 week
+# Foreign or proper-noun leaks found while reviewing ss words
+Bissl
+Classic
+Commission
+Cross
+Essener
+Hess
+Pussy
+Swiss
+Wordpress
+association
+professional

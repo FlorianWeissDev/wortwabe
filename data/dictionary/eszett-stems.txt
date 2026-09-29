@@ -1,0 +1,38 @@
+# Substrings that always come from ß in German, written in ss-transliterated
+# form (the source stores words uppercase, so ß arrives as ss). Any dictionary
+# key containing one of these is dropped unless clue texts show it with a
+# genuine ss. Be conservative: ß-free words like aussenden (aus+senden) or
+# kreissparkasse (Kreis+sparkasse) must not match.
+strasse
+schliess
+aussen
+ausser
+draussen
+reissen
+reisst
+beiss
+heiss
+weiss
+fleiss
+giess
+fliess
+geniess
+spiess
+stoss
+gross
+bloss
+fuss
+gruss
+spass
+strauss
+scheiss
+gemass
+massnahm
+ermassen
+preuss
+schmeiss
+schweiss
+liesse
+schiess
+mutmass
+strassburg

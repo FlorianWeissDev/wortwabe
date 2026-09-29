@@ -31,8 +31,9 @@ async function main(): Promise<void> {
   const entries = getEntries({ count: Number.MAX_SAFE_INTEGER }) as SourceEntry[];
   const allowlist = readListFile('allowlist.txt');
   const blocklist = readListFile('blocklist.txt');
+  const eszettStems = readListFile('eszett-stems.txt');
 
-  const dictionary = buildDictionary(entries, { allowlist, blocklist });
+  const dictionary = buildDictionary(entries, { allowlist, blocklist, eszettStems });
   const words = toSortedRecord(dictionary);
 
   await mkdir(dictionaryDir, { recursive: true });
@@ -52,6 +53,7 @@ async function main(): Promise<void> {
       `source entries:   ${String(entries.length)}`,
       `allowlist:        ${String(allowlist.length)}`,
       `blocklist:        ${String(blocklist.length)}`,
+      `eszett stems:     ${String(eszettStems.length)}`,
       `dictionary words: ${String(Object.keys(words).length)}`,
       `by length:        ${byLength}`,
       '',

@@ -3,7 +3,9 @@ import { describe, expect, it } from 'vitest';
 import {
   buildDictionary,
   displayForm,
+  extractEszettEvidence,
   isCommonPos,
+  isEszettWord,
   isPlayableWord,
   parseWordListFile,
   toSortedRecord,
@@ -121,6 +123,76 @@ describe('buildDictionary', () => {
     const dictionary = buildDictionary(entries, { allowlist: ['Käse', 'Ei'] });
     expect(dictionary.has('käse')).toBe(false);
     expect(dictionary.has('ei')).toBe(false);
+  });
+});
+
+describe('extractEszettEvidence', () => {
+  const entry = (...texts: string[]): SourceEntry => ({
+    word: 'X',
+    pos: 'noun',
+    freqTier: 1,
+    clues: texts.map((text) => ({ text })),
+  });
+
+  it('transliterates ß tokens and separates genuine ss tokens', () => {
+    const { eszettEvidence, ssEvidence } = extractEszettEvidence([
+      entry('Die Straße ist GROß.', 'Wasser im Glas'),
+    ]);
+    expect([...eszettEvidence].sort()).toEqual(['gross', 'strasse']);
+    expect([...ssEvidence]).toEqual(['wasser']);
+  });
+
+  it('tolerates entries without clues', () => {
+    const { eszettEvidence, ssEvidence } = extractEszettEvidence([
+      { word: 'X', pos: 'noun', freqTier: 1 },
+    ]);
+    expect(eszettEvidence.size + ssEvidence.size).toBe(0);
+  });
+});
+
+describe('isEszettWord', () => {
+  const context = {
+    eszettEvidence: new Set(['strasse', 'masse']),
+    ssEvidence: new Set(['wasser', 'masse', 'aussenden']),
+    stems: ['schliess', 'aussen'],
+  };
+
+  it('flags keys that clue texts show with ß', () => {
+    expect(isEszettWord('strasse', context)).toBe(true);
+  });
+
+  it('keeps genuine ss words without evidence of ß', () => {
+    expect(isEszettWord('wasser', context)).toBe(false);
+    expect(isEszettWord('klasse', context)).toBe(false);
+  });
+
+  it('keeps words with evidence of both spellings', () => {
+    expect(isEszettWord('masse', context)).toBe(false);
+  });
+
+  it('flags keys containing a stem', () => {
+    expect(isEszettWord('ausschliesslich', context)).toBe(true);
+  });
+
+  it('lets genuine ss evidence override a stem match', () => {
+    expect(isEszettWord('aussenden', context)).toBe(false);
+  });
+});
+
+describe('buildDictionary ß handling', () => {
+  const entries: readonly SourceEntry[] = [
+    { word: 'STRASSE', pos: 'noun', freqTier: 1, clues: [{ text: 'Eine Straße in der Stadt' }] },
+    { word: 'WASSER', pos: 'noun', freqTier: 1, clues: [{ text: 'Das Wasser fließt' }] },
+    { word: 'SCHLIESSEN', pos: 'verb', freqTier: 1 },
+  ];
+
+  it('drops ß-origin keys by evidence and by stem, but not the allowlist', () => {
+    const dictionary = buildDictionary(entries, {
+      eszettStems: ['schliess'],
+      allowlist: ['Strasse'],
+    });
+    expect([...dictionary.keys()].sort()).toEqual(['strasse', 'wasser']);
+    expect(dictionary.get('strasse')).toBe('Strasse');
   });
 });
 

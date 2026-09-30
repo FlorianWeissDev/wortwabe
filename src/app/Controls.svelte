@@ -35,7 +35,7 @@
     display: flex;
     gap: 0.6rem;
     align-items: stretch;
-    padding: 0.5rem 1rem 1.5rem;
+    padding: 0.5rem 1rem 1rem;
   }
   .btn {
     min-height: 3.25rem;

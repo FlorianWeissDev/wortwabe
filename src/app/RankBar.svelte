@@ -1,15 +1,54 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
+
   import { RANK_THRESHOLDS, pointsForRank, type RankProgress } from '../engine';
   import { de } from '../locale/de';
 
   let { progress }: { progress: RankProgress } = $props();
 
   let open = $state(false);
+  let trigger = $state<HTMLButtonElement>();
+  let pulse = $state(false);
+
+  function close(): void {
+    open = false;
+    trigger?.focus();
+  }
+
+  function focusOnMount(node: HTMLElement): void {
+    node.focus({ preventScroll: true });
+  }
+
+  // Focus stays on the sheet itself, which has no focusable children.
+  function trap(event: KeyboardEvent): void {
+    if (event.key === 'Tab') {
+      event.preventDefault();
+    } else if (event.key === 'Escape') {
+      event.stopPropagation();
+      close();
+    }
+  }
+
+  // Pulse only when the rank rises during this component's lifetime; the parent
+  // remounts on a puzzle switch, so the initial value is never a rise.
+  let previousIndex = untrack(() => progress.index);
+  $effect(() => {
+    const index = progress.index;
+    if (index > previousIndex) {
+      pulse = true;
+      const timer = setTimeout(() => {
+        pulse = false;
+      }, 700);
+      previousIndex = index;
+      return () => clearTimeout(timer);
+    }
+    previousIndex = index;
+  });
 </script>
 
 <svelte:window
   onkeydown={(e) => {
-    if (e.key === 'Escape') open = false;
+    if (open && e.key === 'Escape') close();
   }}
 />
 
@@ -18,18 +57,19 @@
     type="button"
     class="rank-bar"
     aria-expanded={open}
+    bind:this={trigger}
     onclick={() => {
       open = !open;
     }}
   >
-    <span class="rank-name">{de.ranks[progress.id]}</span>
+    <span class="rank-name" class:pulse>{de.ranks[progress.id]}</span>
     <span class="track">
       <span class="line"></span>
       <span class="fill" style:width="{(progress.index / (RANK_THRESHOLDS.length - 1)) * 90}%"
       ></span>
       {#each RANK_THRESHOLDS as t, i (t.id)}
         {#if i === progress.index}
-          <i class="dot cur">{progress.score}</i>
+          <i class="dot cur" class:pulse>{progress.score}</i>
         {:else}
           <i class="dot" class:on={i < progress.index}></i>
         {/if}
@@ -38,16 +78,16 @@
   </button>
 
   {#if open}
-    <button
-      type="button"
-      class="scrim"
+    <button type="button" class="scrim" tabindex="-1" aria-hidden="true" onclick={close}></button>
+    <div
+      class="sheet"
+      role="dialog"
+      aria-modal="true"
       tabindex="-1"
-      aria-hidden="true"
-      onclick={() => {
-        open = false;
-      }}
-    ></button>
-    <div class="sheet">
+      data-sheet-open
+      use:focusOnMount
+      onkeydown={trap}
+    >
       <p class="cap">
         <span>{de.yourScore(progress.score, progress.maxScore)}</span>
         {#if progress.nextRank}
@@ -246,5 +286,38 @@
   li.now .m,
   li.now .p {
     color: var(--on-accent);
+  }
+
+  .sheet:focus {
+    outline: none;
+  }
+
+  .rank-name.pulse,
+  .dot.cur.pulse {
+    animation: rank-pulse 700ms ease-out;
+  }
+
+  @keyframes rank-pulse {
+    0% {
+      transform: scale(1);
+      box-shadow: 0 0 0 3px var(--bg);
+    }
+    35% {
+      transform: scale(1.25);
+      box-shadow:
+        0 0 0 3px var(--bg),
+        0 0 0.9rem 0.3rem var(--accent);
+    }
+    100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 3px var(--bg);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rank-name.pulse,
+    .dot.cur.pulse {
+      animation: none;
+    }
   }
 </style>

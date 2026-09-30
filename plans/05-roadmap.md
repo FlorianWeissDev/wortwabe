@@ -50,6 +50,8 @@ components, then the components in parallel.
 
 ## M5 — Puzzle picker, persistence & polish
 
+**Status: done.**
+
 - `localStorage` progress per puzzle, restore on reload, Wednesday rollover handling.
 - `PuzzlePicker` over the bundled puzzles with per-puzzle rank; deep link is a `?date=YYYY-MM-DD` query parameter.
 - Rules dialog, responsive layout, focus management and screen-reader labels, the three

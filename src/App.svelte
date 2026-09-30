@@ -3,7 +3,7 @@
 
   import Controls from './app/Controls.svelte';
   import FoundWords from './app/FoundWords.svelte';
-  import { createGame } from './app/game.svelte';
+  import { createGame, type Game } from './app/game.svelte';
   import Hive from './app/Hive.svelte';
   import InputLine from './app/InputLine.svelte';
   import { keyToAction } from './app/keys';
@@ -15,6 +15,7 @@
   import RankBar from './app/RankBar.svelte';
   import RulesDialog from './app/RulesDialog.svelte';
   import Toast from './app/Toast.svelte';
+  import { feedbackText } from './app/feedback';
   import { de } from './locale/de';
   import { browserStorage, loadProgress, saveProgress } from './storage/progress';
 
@@ -26,6 +27,10 @@
   let rulesOpen = $state(false);
   let pickerOpen = $state(false);
   const dialogOpen = $derived(rulesOpen || pickerOpen);
+
+  // Screen-reader announcements; `id` re-inserts the text so repeats are read again.
+  let announcement = $state({ text: '', id: 0 });
+  let lastSeen: { game: Game; feedbackId: number; rankIndex: number } | null = null;
 
   const puzzle = $derived(opened.puzzle);
   const hasExplicitDate = $derived(new URLSearchParams(search).has('date'));
@@ -49,6 +54,43 @@
         saveProgress(storage, current.date, words);
       },
     });
+  });
+
+  $effect(() => {
+    const current = game;
+    if (current === null) {
+      lastSeen = null;
+      return;
+    }
+    const feedbackId = current.feedbackId;
+    const rankIndex = current.rank.index;
+    const previous = lastSeen;
+    lastSeen = { game: current, feedbackId, rankIndex };
+    // A freshly created game (first render or puzzle switch) announces nothing.
+    if (previous === null || previous.game !== current) {
+      return;
+    }
+    const parts: string[] = [];
+    if (feedbackId !== previous.feedbackId) {
+      const result = untrack(() => current.state.lastResult);
+      if (result?.status === 'ACCEPTED') {
+        const word =
+          untrack(() => current.state.index.displayForms.get(result.word)) ?? result.word;
+        parts.push(
+          result.isPangram
+            ? de.a11y.pangramAccepted(word, result.points)
+            : de.a11y.wordAccepted(word, result.points),
+        );
+      } else if (result !== null) {
+        parts.push(feedbackText(result));
+      }
+    }
+    if (rankIndex > previous.rankIndex) {
+      parts.push(de.a11y.rankUp(de.ranks[current.rank.id]));
+    }
+    if (parts.length > 0) {
+      announcement = { text: parts.join('. '), id: announcement.id + 1 };
+    }
   });
 
   function navigate(next: string): void {
@@ -89,7 +131,7 @@
   }
 
   function onkeydown(event: KeyboardEvent): void {
-    if (dialogOpen) {
+    if (dialogOpen || document.querySelector('[data-sheet-open]') !== null) {
       return;
     }
     const action = keyToAction(event);
@@ -149,35 +191,45 @@
         >
       </p>
     {/if}
-    <RankBar progress={game.rank} />
-    <FoundWords words={game.sortedFound} pangrams={game.pangramForms} total={puzzle.words.length} />
-    <main class="play">
-      <div class="mid">
-        <Toast result={game.state.lastResult} feedbackId={game.feedbackId} />
-        <InputLine input={game.state.input} center={puzzle.centerLetter} shakeId={game.shakeId} />
-        <Hive
-          center={puzzle.centerLetter}
-          outer={game.state.outerOrder}
-          onletter={(letter) => {
-            game.dispatch({ type: 'TYPE', letter });
-          }}
-        />
-      </div>
-    </main>
-    <Controls
-      ondelete={() => {
-        game.dispatch({ type: 'DELETE' });
-      }}
-      onshuffle={() => {
-        game.dispatch({ type: 'SHUFFLE' });
-      }}
-      onsubmit={() => {
-        game.dispatch({ type: 'SUBMIT' });
-      }}
-    />
+    {#key puzzle.date}
+      <RankBar progress={game.rank} />
+      <FoundWords
+        words={game.sortedFound}
+        pangrams={game.pangramForms}
+        total={puzzle.words.length}
+      />
+      <main class="play">
+        <div class="mid">
+          <Toast result={game.state.lastResult} feedbackId={game.feedbackId} />
+          <InputLine input={game.state.input} center={puzzle.centerLetter} shakeId={game.shakeId} />
+          <Hive
+            center={puzzle.centerLetter}
+            outer={game.state.outerOrder}
+            onletter={(letter) => {
+              game.dispatch({ type: 'TYPE', letter });
+            }}
+          />
+        </div>
+      </main>
+      <Controls
+        ondelete={() => {
+          game.dispatch({ type: 'DELETE' });
+        }}
+        onshuffle={() => {
+          game.dispatch({ type: 'SHUFFLE' });
+        }}
+        onsubmit={() => {
+          game.dispatch({ type: 'SUBMIT' });
+        }}
+      />
+    {/key}
   {:else}
     <main class="play"><p>{de.noPuzzle}</p></main>
   {/if}
+</div>
+
+<div class="sr-only" aria-live="polite" aria-atomic="true">
+  {#key announcement.id}<span>{announcement.text}</span>{/key}
 </div>
 
 <RulesDialog
@@ -196,6 +248,18 @@
 />
 
 <style>
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+  }
+
   .link {
     padding: 0;
     border: 0;

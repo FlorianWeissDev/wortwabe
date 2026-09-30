@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
+
   import { de } from '../locale/de';
 
   let {
@@ -8,11 +10,43 @@
   }: { words: readonly string[]; pangrams: ReadonlySet<string>; total?: number } = $props();
 
   let open = $state(false);
+  let trigger = $state<HTMLButtonElement>();
+  let flashId = $state(0);
+
+  function close(): void {
+    open = false;
+    trigger?.focus();
+  }
+
+  function focusOnMount(node: HTMLElement): void {
+    node.focus({ preventScroll: true });
+  }
+
+  // The sheet has no focusable children, so Tab simply stays on it.
+  function trap(event: KeyboardEvent): void {
+    if (event.key === 'Tab') {
+      event.preventDefault();
+    } else if (event.key === 'Escape') {
+      event.stopPropagation();
+      close();
+    }
+  }
+
+  // Flash only when a word is added during this component's lifetime; the parent
+  // remounts on a puzzle switch, so the initial count is never a "new word".
+  let previousCount = untrack(() => words.length);
+  $effect(() => {
+    const count = words.length;
+    if (count > previousCount) {
+      flashId += 1;
+    }
+    previousCount = count;
+  });
 </script>
 
 <svelte:window
   onkeydown={(e) => {
-    if (e.key === 'Escape') open = false;
+    if (open && e.key === 'Escape') close();
   }}
 />
 
@@ -26,10 +60,14 @@
       type="button"
       class="strip"
       aria-expanded={open}
+      bind:this={trigger}
       onclick={() => {
         open = !open;
       }}
     >
+      {#key flashId}
+        {#if flashId > 0}<span class="flash" aria-hidden="true"></span>{/if}
+      {/key}
       <span class="cnt">{de.foundCount(words.length)}</span>
       <span class="list">
         {#each words as word, i (word)}
@@ -40,16 +78,16 @@
     </button>
 
     {#if open}
-      <button
-        type="button"
-        class="scrim"
+      <button type="button" class="scrim" tabindex="-1" aria-hidden="true" onclick={close}></button>
+      <div
+        class="sheet"
+        role="dialog"
+        aria-modal="true"
         tabindex="-1"
-        aria-hidden="true"
-        onclick={() => {
-          open = false;
-        }}
-      ></button>
-      <div class="sheet">
+        data-sheet-open
+        use:focusOnMount
+        onkeydown={trap}
+      >
         <p class="cap">
           <span
             >{total === undefined
@@ -92,7 +130,37 @@
   }
 
   button.strip {
+    position: relative;
+    overflow: hidden;
     cursor: pointer;
+  }
+
+  .flash {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: var(--accent);
+    opacity: 0;
+    animation: flash 600ms ease-out;
+  }
+
+  @keyframes flash {
+    from {
+      opacity: 0.55;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  .sheet:focus {
+    outline: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .flash {
+      animation: none;
+    }
   }
 
   .cnt {

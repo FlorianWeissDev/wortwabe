@@ -7,11 +7,17 @@
 
 <div class="inputwrap">
   {#key shakeId}
-    <div class="input" aria-label={de.aria.input} class:shake={shakeId !== 0}>
+    <div
+      class="input"
+      role="textbox"
+      aria-readonly="true"
+      aria-label="{de.aria.input}: {input}"
+      class:shake={shakeId !== 0}
+    >
       {#each input.toUpperCase().split('') as letter}
         <span class:cl={letter === center.toUpperCase()}>{letter}</span>
       {/each}
-      <span class="caret"></span>
+      <span class="caret" aria-hidden="true"></span>
     </div>
   {/key}
 </div>
@@ -72,6 +78,20 @@
     }
     75% {
       transform: translateX(0.3rem);
+    }
+  }
+
+  @media (max-height: 740px) {
+    .inputwrap {
+      min-height: 3.4rem;
+    }
+
+    .input {
+      font-size: 2.4rem;
+    }
+
+    .caret {
+      height: 2.4rem;
     }
   }
 

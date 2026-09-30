@@ -21,7 +21,8 @@
   });
 </script>
 
-<div class="toastslot" role="status" aria-live="polite">
+<!-- Announced by the live region in App.svelte; no live role here to avoid doubles. -->
+<div class="toastslot" aria-hidden="true">
   {#if isVisible && result !== null}
     <div class="toast" class:pang={result.status === 'ACCEPTED' && result.isPangram}>
       <span>
@@ -37,7 +38,7 @@
 <style>
   .toastslot {
     position: relative;
-    height: 2.8rem;
+    height: 2.4rem;
     width: 100%;
     display: flex;
     align-items: flex-end;

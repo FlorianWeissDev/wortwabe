@@ -28,11 +28,12 @@ components `Hive`, `Controls`, `InputLine`, `Toast`, `RankBar`, `FoundWords`. Th
 design is warm honey with automatic dark mode; tokens live in `src/styles/global.css`. The `?`
 and `☰` header buttons open the M5 dialogs.
 
-**M5 in progress (foundation):** `src/storage/progress.ts` (per-puzzle `localStorage` progress),
-`src/app/picker.ts`, puzzle switching via `?date=` plus Wednesday rollover in `App.svelte`, all
-M5 German strings in `de.ts`. `PuzzlePicker` and `RulesDialog` are stubs awaiting real UI.
+**M5 done:** per-puzzle `localStorage` progress (`src/storage/progress.ts`), the puzzle picker
+(`src/app/picker.ts`, `PuzzlePicker.svelte`), puzzle switching via `?date=` plus Wednesday
+rollover in `App.svelte`, the rules dialog, the accepted-word flash and rank-up pulse, focus
+handling in sheets and dialogs, and a screen-reader live region.
 
-Next: finish M5 (picker and rules UI, polish), then M6 (PWA, ship — hand-written
+Next: M5b (reveal the missed words, always reopenable), then M6 (PWA, ship — hand-written
 manifest and service worker, no plugin). Blocklist/allowlist fixes apply to future puzzles only.
 
 Read `plans/` before starting work — it is the source of truth for every decision below:

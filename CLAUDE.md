@@ -36,8 +36,9 @@ handling in sheets and dialogs, and a screen-reader live region.
 **M5b done:** "Lösung anzeigen" in the found-words sheet — reveals the missed words, always
 reopenable, later words still count; stored as an optional `revealed` flag per puzzle.
 
-Next: M6 (PWA, ship — hand-written
-manifest and service worker, no plugin). Blocklist/allowlist fixes apply to future puzzles only.
+**M6 in progress:** GitHub Pages deployment at `https://florianweissdev.github.io/wortwabe/` (repo
+`FlorianWeissDev/wortwabe`, branch `main`). GitHub Actions workflow (`.github/workflows/deploy.yml`),
+vite.config conditional base path, and English README. Service worker and PWA manifest still to come.
 
 Read `plans/` before starting work — it is the source of truth for every decision below:
 

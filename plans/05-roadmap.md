@@ -71,11 +71,14 @@ components, then the components in parallel.
 
 ## M6 — PWA & ship
 
+**Status: in progress.**
+
 - Hand-written `public/manifest.webmanifest`, icons and `public/sw.js` (network-first for
   navigations, cache-first for the rest), registered from `src/main.ts`. No precache of puzzle
   files needed — they are bundled.
 - Verify install-to-home-screen and offline play on an actual phone, not just DevTools.
-- Static hosting; README in English.
+- GitHub Pages at `https://florianweissdev.github.io/wortwabe/` via GitHub Actions (`/.github/workflows/deploy.yml`).
+- English README and vite.config conditional base path.
 - **Done when:** the app is installed on the phone and today's puzzle plays in airplane mode.
 
 ## Post-MVP backlog

@@ -41,6 +41,9 @@ word list) is confronted early rather than after the UI is built.
 
 ## M4 — Playable UI
 
+**Status: done.** Built mockup-first (approved static HTML), then a foundation with typed stub
+components, then the components in parallel.
+
 - `Hive`, `InputLine`, `Controls`, `FoundWords`, `RankBar`, `Toast`, wired to the reducer.
 - Keyboard and touch input, German locale module.
 - **Done when:** the current week's puzzle is playable start to finish in a browser.

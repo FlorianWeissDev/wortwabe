@@ -22,14 +22,14 @@ Done: **M0** (Vite + Svelte 5 setup), **M1** (engine, `src/engine/`), **M2** (di
 `import.meta.glob`). Published puzzle files are never overwritten; a rerun continues after the
 newest one.
 
-Next: the manual read-through of the generated solution sets (blocklist/allowlist fixes apply
-to future puzzles only). After that M4 (UI, in progress), M5 (picker, persistence, polish), M6 (PWA, ship —
-hand-written manifest and service worker, no plugin).
+**M4 done:** the game is playable in `src/app/` — `game.svelte.ts` (state wrapper over the
+engine reducer), `puzzles.ts`, `keys.ts`, `feedback.ts`, the layout in `src/App.svelte`, and the
+components `Hive`, `Controls`, `InputLine`, `Toast`, `RankBar`, `FoundWords`. The approved visual
+design is warm honey with automatic dark mode; tokens live in `src/styles/global.css`. The `?`
+and `☰` header buttons are inert until M5. Nothing is persisted yet.
 
-**M4 in progress:** the foundation lives in `src/app/` — `game.svelte.ts` (state wrapper over the
-engine reducer), `puzzles.ts`, `keys.ts`, `feedback.ts`, the layout in `src/App.svelte`, and
-stub components (`Hive`, `Controls`, `InputLine`, `Toast`, `RankBar`, `FoundWords`) with final
-props but plain rendering, awaiting styling. Nothing is persisted yet (M5).
+Next: M5 (picker, persistence, rules dialog, polish), then M6 (PWA, ship — hand-written
+manifest and service worker, no plugin). Blocklist/allowlist fixes apply to future puzzles only.
 
 Read `plans/` before starting work — it is the source of truth for every decision below:
 

@@ -45,7 +45,11 @@
       <p class="notice">{de.newestAvailableNotice}</p>
     {/if}
     <RankBar progress={game.rank} />
-    <FoundWords words={game.sortedFound} pangrams={game.pangramForms} />
+    <FoundWords
+      words={game.sortedFound}
+      pangrams={game.pangramForms}
+      total={opened.puzzle.words.length}
+    />
     <main class="play">
       <div class="mid">
         <Toast result={game.state.lastResult} feedbackId={game.feedbackId} />

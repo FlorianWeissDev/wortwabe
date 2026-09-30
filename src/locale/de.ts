@@ -69,6 +69,12 @@ export const de = {
   newestAvailableNotice: 'Für diese Woche gibt es noch kein neues Rätsel.',
 
   foundCount: (n: number): string => (n === 1 ? '1 Wort' : `${String(n)} Wörter`),
+  yourScore: (score: number, max: number): string =>
+    `Dein Stand: ${String(score)} von ${String(max)} Punkten`,
+  pointsToRank: (n: number, rank: string): string =>
+    `Noch ${String(n)} ${n === 1 ? 'Punkt' : 'Punkte'} bis ${rank}`,
+  foundOfTotal: (n: number, total: number): string => `${String(n)} von ${String(total)} Wörtern`,
+  pangramLegend: 'Fett = Pangramm',
   points: (n: number): string => `${String(n)} P.`,
   puzzleFrom: (date: string): string => {
     const [, month, day] = date.split('-');

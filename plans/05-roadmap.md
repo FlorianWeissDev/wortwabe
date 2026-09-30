@@ -71,7 +71,8 @@ components, then the components in parallel.
 
 ## M6 — PWA & ship
 
-**Status: in progress.**
+**Status: done.** Live at `https://florianweissdev.github.io/wortwabe/`; install and offline play
+verified on a real phone.
 
 - Hand-written `public/manifest.webmanifest`, icons and `public/sw.js` (network-first for
   navigations, cache-first for the rest), registered from `src/main.ts`. No precache of puzzle

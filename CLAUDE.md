@@ -11,8 +11,6 @@ mechanic, built for personal use and installed as a PWA on a phone.
 **One puzzle per week, released Wednesday** — not daily. Earlier puzzles stay playable through a
 picker, each with its own saved progress.
 
-The git repository directory is still named `Buchstabiene`; the project itself is `Wortwabe`.
-
 ## Status
 
 Done: **M0** (Vite + Svelte 5 setup), **M1** (engine, `src/engine/`), **M2** (dictionary,
@@ -36,9 +34,14 @@ handling in sheets and dialogs, and a screen-reader live region.
 **M5b done:** "Lösung anzeigen" in the found-words sheet — reveals the missed words, always
 reopenable, later words still count; stored as an optional `revealed` flag per puzzle.
 
-**M6 in progress:** GitHub Pages deployment at `https://florianweissdev.github.io/wortwabe/` (repo
-`FlorianWeissDev/wortwabe`, branch `main`). GitHub Actions workflow (`.github/workflows/deploy.yml`),
-vite.config conditional base path, and English README. Service worker and PWA manifest still to come.
+**M6 done — v1 shipped:** live at `https://florianweissdev.github.io/wortwabe/` (repo
+`FlorianWeissDev/wortwabe`). Every push to `main` deploys via `.github/workflows/deploy.yml`
+(tests, typecheck, build). PWA: `public/manifest.webmanifest`, icons from `tools/make-icons.ts`,
+hand-written `public/sw.js` registered in production only. Install and airplane-mode play were
+verified on a real phone.
+
+Next: generate puzzles beyond 2027-03-17 (`npm run generate:season`) before they run out; then
+the post-MVP backlog in `plans/05-roadmap.md`.
 
 Read `plans/` before starting work — it is the source of truth for every decision below:
 

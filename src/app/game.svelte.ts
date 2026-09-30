@@ -1,8 +1,15 @@
 import { createGameState, rankForScore, reduce, totalScore } from '../engine';
 import type { GameAction, GameState, Puzzle } from '../engine';
 
-export function createGame(puzzle: Puzzle) {
-  let state = $state.raw<GameState>(createGameState(puzzle));
+export interface GameOptions {
+  /** Previously found words (normalized) to restore. */
+  saved?: readonly string[];
+  /** Called with all found words after a SUBMIT that added one. */
+  onfound?: (foundWords: readonly string[]) => void;
+}
+
+export function createGame(puzzle: Puzzle, options: GameOptions = {}) {
+  let state = $state.raw<GameState>(createGameState(puzzle, options.saved));
   let shakeId = $state(0);
   let feedbackId = $state(0);
 
@@ -40,6 +47,7 @@ export function createGame(puzzle: Puzzle) {
       return feedbackId;
     },
     dispatch(action: GameAction): void {
+      const previousCount = state.foundWords.length;
       const next = reduce(state, action);
       if (action.type === 'TYPE' && next === state) {
         shakeId += 1;
@@ -48,6 +56,9 @@ export function createGame(puzzle: Puzzle) {
         feedbackId += 1;
       }
       state = next;
+      if (action.type === 'SUBMIT' && next.foundWords.length > previousCount) {
+        options.onfound?.(next.foundWords);
+      }
     },
   };
 }

@@ -1,19 +1,97 @@
 <script lang="ts">
+  import { untrack } from 'svelte';
+
   import Controls from './app/Controls.svelte';
   import FoundWords from './app/FoundWords.svelte';
   import { createGame } from './app/game.svelte';
   import Hive from './app/Hive.svelte';
   import InputLine from './app/InputLine.svelte';
   import { keyToAction } from './app/keys';
-  import { openPuzzle } from './app/puzzles';
+  import { currentPuzzleDate } from './engine';
+  import type { PuzzleDate } from './engine';
+  import { pickerEntries } from './app/picker';
+  import PuzzlePicker from './app/PuzzlePicker.svelte';
+  import { openPuzzle, puzzles } from './app/puzzles';
   import RankBar from './app/RankBar.svelte';
+  import RulesDialog from './app/RulesDialog.svelte';
   import Toast from './app/Toast.svelte';
   import { de } from './locale/de';
+  import { browserStorage, loadProgress, saveProgress } from './storage/progress';
 
-  const opened = openPuzzle(new Date(), window.location.search);
-  const game = opened.puzzle ? createGame(opened.puzzle) : null;
+  let now = $state(new Date());
+  let search = $state(window.location.search);
+  let opened = $derived(openPuzzle(now, search));
+  const storage = browserStorage();
+
+  let rulesOpen = $state(false);
+  let pickerOpen = $state(false);
+  const dialogOpen = $derived(rulesOpen || pickerOpen);
+
+  const puzzle = $derived(opened.puzzle);
+  const hasExplicitDate = $derived(new URLSearchParams(search).has('date'));
+  const currentDate = $derived(currentPuzzleDate(now));
+  const isOlder = $derived(puzzle !== null && puzzle.date < currentDate);
+  const entries = $derived(
+    pickerOpen
+      ? pickerEntries(puzzles, now, (date) => loadProgress(storage, date), puzzle?.date ?? null)
+      : [],
+  );
+
+  // A new game per shown puzzle; saved progress is read once when it is created.
+  const game = $derived.by(() => {
+    const current = puzzle;
+    if (current === null) {
+      return null;
+    }
+    return createGame(current, {
+      saved: untrack(() => loadProgress(storage, current.date)),
+      onfound: (words) => {
+        saveProgress(storage, current.date, words);
+      },
+    });
+  });
+
+  function navigate(next: string): void {
+    now = new Date();
+    search = next;
+  }
+
+  function show(date: PuzzleDate | null): void {
+    const params = new URLSearchParams(search);
+    if (date === null || date === currentPuzzleDate(new Date())) {
+      params.delete('date');
+    } else {
+      params.set('date', date);
+    }
+    const query = params.toString();
+    const next = query === '' ? '' : `?${query}`;
+    history.pushState(null, '', `${window.location.pathname}${next}`);
+    navigate(next);
+  }
+
+  function pick(date: PuzzleDate): void {
+    pickerOpen = false;
+    show(date);
+  }
+
+  function onpopstate(): void {
+    navigate(window.location.search);
+  }
+
+  function onvisibilitychange(): void {
+    if (document.visibilityState !== 'visible') {
+      return;
+    }
+    const fresh = new Date();
+    if (!hasExplicitDate && puzzle !== null && currentPuzzleDate(fresh) !== currentDate) {
+      now = fresh;
+    }
+  }
 
   function onkeydown(event: KeyboardEvent): void {
+    if (dialogOpen) {
+      return;
+    }
     const action = keyToAction(event);
     if (game === null || action === null) {
       return;
@@ -25,41 +103,60 @@
   }
 </script>
 
-<svelte:window {onkeydown} />
+<svelte:window {onkeydown} {onpopstate} />
+<svelte:document {onvisibilitychange} />
 
 <div class="app">
   <header class="top">
-    <button class="icon" type="button" aria-label={de.aria.rules}>?</button>
+    <button
+      class="icon"
+      type="button"
+      aria-label={de.aria.rules}
+      onclick={() => {
+        rulesOpen = true;
+      }}>?</button
+    >
     <div class="brand">
       <span class="logo"></span>
       <div>
         <h1>{de.appName}</h1>
-        {#if opened.puzzle}<small>{de.puzzleFrom(opened.puzzle.date)}</small>{/if}
+        {#if puzzle}<small>{de.puzzleFrom(puzzle.date)}</small>{/if}
       </div>
     </div>
-    <button class="icon" type="button" aria-label={de.aria.pickPuzzle}>☰</button>
+    <button
+      class="icon"
+      type="button"
+      aria-label={de.aria.pickPuzzle}
+      onclick={() => {
+        pickerOpen = true;
+      }}>☰</button
+    >
   </header>
 
-  {#if game && opened.puzzle}
+  {#if game && puzzle}
     {#if opened.resolution.status === 'NEWEST_AVAILABLE'}
       <p class="notice">{de.newestAvailableNotice}</p>
     {/if}
+    {#if isOlder}
+      <p class="notice">
+        {de.olderPuzzleNotice(puzzle.date)} ·
+        <button
+          class="link"
+          type="button"
+          onclick={() => {
+            show(null);
+          }}>{de.backToCurrent}</button
+        >
+      </p>
+    {/if}
     <RankBar progress={game.rank} />
-    <FoundWords
-      words={game.sortedFound}
-      pangrams={game.pangramForms}
-      total={opened.puzzle.words.length}
-    />
+    <FoundWords words={game.sortedFound} pangrams={game.pangramForms} total={puzzle.words.length} />
     <main class="play">
       <div class="mid">
         <Toast result={game.state.lastResult} feedbackId={game.feedbackId} />
-        <InputLine
-          input={game.state.input}
-          center={opened.puzzle.centerLetter}
-          shakeId={game.shakeId}
-        />
+        <InputLine input={game.state.input} center={puzzle.centerLetter} shakeId={game.shakeId} />
         <Hive
-          center={opened.puzzle.centerLetter}
+          center={puzzle.centerLetter}
           outer={game.state.outerOrder}
           onletter={(letter) => {
             game.dispatch({ type: 'TYPE', letter });
@@ -83,7 +180,31 @@
   {/if}
 </div>
 
+<RulesDialog
+  open={rulesOpen}
+  onclose={() => {
+    rulesOpen = false;
+  }}
+/>
+<PuzzlePicker
+  open={pickerOpen}
+  {entries}
+  onpick={pick}
+  onclose={() => {
+    pickerOpen = false;
+  }}
+/>
+
 <style>
+  .link {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--accent);
+    font: inherit;
+    text-decoration: underline;
+  }
+
   .app {
     display: flex;
     flex-direction: column;

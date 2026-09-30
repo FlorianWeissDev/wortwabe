@@ -109,6 +109,9 @@ rank are always recomputed from `foundWords` via the engine, never stored — so
 can never desync from saved data. Unknown or older `schemaVersion` is discarded, not migrated,
 in v1.
 
+`browserStorage()` returns `localStorage`, or an in-memory fallback when merely accessing it throws
+(private mode); reads and writes are wrapped in try/catch, so storage failure never breaks play.
+
 Each puzzle has its own independent entry, so switching to an older puzzle and back never
 disturbs the current week's progress. The picker reads all entries to show a rank per puzzle.
 

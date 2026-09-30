@@ -26,9 +26,13 @@ newest one.
 engine reducer), `puzzles.ts`, `keys.ts`, `feedback.ts`, the layout in `src/App.svelte`, and the
 components `Hive`, `Controls`, `InputLine`, `Toast`, `RankBar`, `FoundWords`. The approved visual
 design is warm honey with automatic dark mode; tokens live in `src/styles/global.css`. The `?`
-and `☰` header buttons are inert until M5. Nothing is persisted yet.
+and `☰` header buttons open the M5 dialogs.
 
-Next: M5 (picker, persistence, rules dialog, polish), then M6 (PWA, ship — hand-written
+**M5 in progress (foundation):** `src/storage/progress.ts` (per-puzzle `localStorage` progress),
+`src/app/picker.ts`, puzzle switching via `?date=` plus Wednesday rollover in `App.svelte`, all
+M5 German strings in `de.ts`. `PuzzlePicker` and `RulesDialog` are stubs awaiting real UI.
+
+Next: finish M5 (picker and rules UI, polish), then M6 (PWA, ship — hand-written
 manifest and service worker, no plugin). Blocklist/allowlist fixes apply to future puzzles only.
 
 Read `plans/` before starting work — it is the source of truth for every decision below:

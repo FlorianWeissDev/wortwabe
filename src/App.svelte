@@ -50,8 +50,8 @@
     }
     return createGame(current, {
       saved: untrack(() => loadProgress(storage, current.date)),
-      onfound: (words) => {
-        saveProgress(storage, current.date, words);
+      onchange: (progress) => {
+        saveProgress(storage, current.date, progress);
       },
     });
   });
@@ -197,6 +197,14 @@
         words={game.sortedFound}
         pangrams={game.pangramForms}
         total={puzzle.words.length}
+        missed={game.missed}
+        revealed={game.revealed}
+        onreveal={() => {
+          game.reveal();
+        }}
+        onhide={() => {
+          game.hide();
+        }}
       />
       <main class="play">
         <div class="mid">

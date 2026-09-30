@@ -7,11 +7,52 @@
     words,
     pangrams,
     total,
-  }: { words: readonly string[]; pangrams: ReadonlySet<string>; total?: number } = $props();
+    missed,
+    revealed,
+    onreveal,
+    onhide,
+  }: {
+    words: readonly string[];
+    pangrams: ReadonlySet<string>;
+    total?: number;
+    missed: readonly string[];
+    revealed: boolean;
+    onreveal: () => void;
+    onhide: () => void;
+  } = $props();
 
   let open = $state(false);
+  let confirming = $state(false);
+  let sheet = $state<HTMLElement>();
   let trigger = $state<HTMLButtonElement>();
   let flashId = $state(0);
+
+  // The confirm step never survives a closed sheet.
+  $effect(() => {
+    if (!open) {
+      confirming = false;
+    }
+  });
+
+  function reveal(): void {
+    confirming = false;
+    onreveal();
+    sheet?.focus({ preventScroll: true });
+  }
+
+  function hide(): void {
+    onhide();
+    sheet?.focus({ preventScroll: true });
+  }
+
+  function startConfirm(): void {
+    confirming = true;
+  }
+
+  function cancelConfirm(): void {
+    confirming = false;
+    sheet?.focus({ preventScroll: true });
+  }
 
   function close(): void {
     open = false;
@@ -22,10 +63,18 @@
     node.focus({ preventScroll: true });
   }
 
-  // The sheet has no focusable children, so Tab simply stays on it.
+  // Tab cycles through the sheet's own buttons only.
   function trap(event: KeyboardEvent): void {
     if (event.key === 'Tab') {
       event.preventDefault();
+      const items = [...(sheet?.querySelectorAll<HTMLElement>('button') ?? [])];
+      if (items.length === 0) {
+        return;
+      }
+      const at = items.indexOf(document.activeElement as HTMLElement);
+      const step = event.shiftKey ? -1 : 1;
+      const next = at === -1 ? (event.shiftKey ? items.length - 1 : 0) : at + step;
+      items[(next + items.length) % items.length]?.focus();
     } else if (event.key === 'Escape') {
       event.stopPropagation();
       close();
@@ -51,58 +100,78 @@
 />
 
 <div class="wrap">
-  {#if words.length === 0}
-    <div class="strip">
-      <span class="cnt">{de.foundCount(0)}</span>
-    </div>
-  {:else}
-    <button
-      type="button"
-      class="strip"
-      aria-expanded={open}
-      bind:this={trigger}
-      onclick={() => {
-        open = !open;
-      }}
+  <button
+    type="button"
+    class="strip"
+    aria-expanded={open}
+    bind:this={trigger}
+    onclick={() => {
+      open = !open;
+    }}
+  >
+    {#key flashId}
+      {#if flashId > 0}<span class="flash" aria-hidden="true"></span>{/if}
+    {/key}
+    <span class="cnt"
+      >{revealed && total !== undefined
+        ? `${de.foundOfTotal(words.length, total)} · ${de.reveal.stripSuffix}`
+        : de.foundCount(words.length)}</span
     >
-      {#key flashId}
-        {#if flashId > 0}<span class="flash" aria-hidden="true"></span>{/if}
-      {/key}
-      <span class="cnt">{de.foundCount(words.length)}</span>
-      <span class="list">
-        {#each words as word, i (word)}
-          <span class:pg={pangrams.has(word)}>{word}{i < words.length - 1 ? ', ' : ''}</span>
-        {/each}
-      </span>
-      <span class="chev" aria-hidden="true">{open ? '▴' : '▾'}</span>
-    </button>
+    <span class="list">
+      {#each words as word, i (word)}
+        <span class:pg={pangrams.has(word)}>{word}{i < words.length - 1 ? ', ' : ''}</span>
+      {/each}
+    </span>
+    <span class="chev" aria-hidden="true">{open ? '▴' : '▾'}</span>
+  </button>
 
-    {#if open}
-      <button type="button" class="scrim" tabindex="-1" aria-hidden="true" onclick={close}></button>
-      <div
-        class="sheet"
-        role="dialog"
-        aria-modal="true"
-        tabindex="-1"
-        data-sheet-open
-        use:focusOnMount
-        onkeydown={trap}
-      >
-        <p class="cap">
-          <span
-            >{total === undefined
-              ? de.foundCount(words.length)
-              : de.foundOfTotal(words.length, total)}</span
-          >
-          <span class="lg"><b class="pg">{de.pangramLegend}</b></span>
-        </p>
-        <ul>
-          {#each words as word (word)}
-            <li class:pg={pangrams.has(word)}>{word}</li>
+  {#if open}
+    <button type="button" class="scrim" tabindex="-1" aria-hidden="true" onclick={close}></button>
+    <div
+      class="sheet"
+      role="dialog"
+      aria-modal="true"
+      tabindex="-1"
+      data-sheet-open
+      bind:this={sheet}
+      use:focusOnMount
+      onkeydown={trap}
+    >
+      <p class="cap">
+        <span
+          >{total === undefined
+            ? de.foundCount(words.length)
+            : de.foundOfTotal(words.length, total)}</span
+        >
+        <span class="lg"
+          ><b class="pg">{de.pangramLegend}</b>{#if revealed}
+            · <span class="grey">{de.missedLegend}</span>{/if}</span
+        >
+      </p>
+      <ul>
+        {#each words as word (word)}
+          <li class:pg={pangrams.has(word)}>{word}</li>
+        {/each}
+        {#if revealed}
+          {#each missed as word (word)}
+            <li class="miss" class:pg={pangrams.has(word)}>{word}</li>
           {/each}
-        </ul>
+        {/if}
+      </ul>
+      <div class="actions">
+        {#if revealed}
+          <button type="button" class="btn" onclick={hide}>{de.reveal.keepGuessing}</button>
+        {:else if confirming}
+          <p class="ask">{de.reveal.confirm}</p>
+          <div class="row">
+            <button type="button" class="btn" onclick={cancelConfirm}>{de.reveal.cancel}</button>
+            <button type="button" class="btn primary" onclick={reveal}>{de.reveal.show}</button>
+          </div>
+        {:else}
+          <button type="button" class="btn" onclick={startConfirm}>{de.reveal.action}</button>
+        {/if}
       </div>
-    {/if}
+    </div>
   {/if}
 </div>
 
@@ -234,6 +303,58 @@
     column-count: 3;
     column-gap: 1rem;
     font-size: 0.95rem;
+  }
+
+  li.miss:not(.pg) {
+    color: var(--muted);
+  }
+
+  li.miss {
+    opacity: 0.7;
+  }
+
+  .grey {
+    color: var(--muted);
+  }
+
+  .actions {
+    margin-top: 0.9rem;
+    text-align: center;
+  }
+
+  .ask {
+    margin: 0 0 0.5rem;
+    font-weight: 700;
+  }
+
+  .row {
+    display: flex;
+    justify-content: center;
+    gap: 0.6rem;
+  }
+
+  .btn {
+    min-height: 2.75rem;
+    padding: 0.5rem 1.1rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: inherit;
+    font: inherit;
+    font-size: 0.9rem;
+    cursor: pointer;
+  }
+
+  .btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--on-accent);
+    font-weight: 700;
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--accent-strong);
+    outline-offset: 2px;
   }
 
   li {

@@ -104,7 +104,8 @@ Puzzles are part of the JS bundle, so no separate precache of puzzle files is ne
 
 ### 5. Persistence (`src/storage/`)
 
-`localStorage` key `wortwabe:progress:<date>`, value `{ schemaVersion, foundWords[] }`. Score and
+`localStorage` key `wortwabe:progress:<date>`, value `{ schemaVersion, foundWords[], revealed? }` (`revealed` is optional, so the schema stays 1;
+missing or non-boolean reads as false). Score and
 rank are always recomputed from `foundWords` via the engine, never stored — so a scoring change
 can never desync from saved data. Unknown or older `schemaVersion` is discarded, not migrated,
 in v1.

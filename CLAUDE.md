@@ -33,7 +33,10 @@ and `☰` header buttons open the M5 dialogs.
 rollover in `App.svelte`, the rules dialog, the accepted-word flash and rank-up pulse, focus
 handling in sheets and dialogs, and a screen-reader live region.
 
-Next: M5b (reveal the missed words, always reopenable), then M6 (PWA, ship — hand-written
+**M5b done:** "Lösung anzeigen" in the found-words sheet — reveals the missed words, always
+reopenable, later words still count; stored as an optional `revealed` flag per puzzle.
+
+Next: M6 (PWA, ship — hand-written
 manifest and service worker, no plugin). Blocklist/allowlist fixes apply to future puzzles only.
 
 Read `plans/` before starting work — it is the source of truth for every decision below:

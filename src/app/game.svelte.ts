@@ -2,14 +2,15 @@ import { createGameState, rankForScore, reduce, totalScore } from '../engine';
 import type { GameAction, GameState, Puzzle } from '../engine';
 
 export interface GameOptions {
-  /** Previously found words (normalized) to restore. */
-  saved?: readonly string[];
-  /** Called with all found words after a SUBMIT that added one. */
-  onfound?: (foundWords: readonly string[]) => void;
+  /** Previously found words (normalized) and reveal flag to restore. */
+  saved?: { foundWords: readonly string[]; revealed: boolean };
+  /** Called with the full progress after a new word, a reveal or a hide. */
+  onchange?: (progress: { foundWords: readonly string[]; revealed: boolean }) => void;
 }
 
 export function createGame(puzzle: Puzzle, options: GameOptions = {}) {
-  let state = $state.raw<GameState>(createGameState(puzzle, options.saved));
+  let state = $state.raw<GameState>(createGameState(puzzle, options.saved?.foundWords));
+  let revealed = $state(options.saved?.revealed ?? false);
   let shakeId = $state(0);
   let feedbackId = $state(0);
 
@@ -17,6 +18,12 @@ export function createGame(puzzle: Puzzle, options: GameOptions = {}) {
   const rank = $derived(rankForScore(score, state.index.maxScore));
   const sortedFound = $derived(
     state.foundWords
+      .map((word) => state.index.displayForms.get(word) ?? word)
+      .sort((a, b) => a.localeCompare(b, 'de')),
+  );
+  const missed = $derived(
+    [...state.index.solutions]
+      .filter((word) => !state.foundWords.includes(word))
       .map((word) => state.index.displayForms.get(word) ?? word)
       .sort((a, b) => a.localeCompare(b, 'de')),
   );
@@ -36,6 +43,12 @@ export function createGame(puzzle: Puzzle, options: GameOptions = {}) {
     },
     get sortedFound() {
       return sortedFound;
+    },
+    get missed(): readonly string[] {
+      return missed;
+    },
+    get revealed() {
+      return revealed;
     },
     get pangramForms(): ReadonlySet<string> {
       return pangramForms;
@@ -57,8 +70,16 @@ export function createGame(puzzle: Puzzle, options: GameOptions = {}) {
       }
       state = next;
       if (action.type === 'SUBMIT' && next.foundWords.length > previousCount) {
-        options.onfound?.(next.foundWords);
+        options.onchange?.({ foundWords: next.foundWords, revealed });
       }
+    },
+    reveal(): void {
+      revealed = true;
+      options.onchange?.({ foundWords: state.foundWords, revealed });
+    },
+    hide(): void {
+      revealed = false;
+      options.onchange?.({ foundWords: state.foundWords, revealed });
     },
   };
 }

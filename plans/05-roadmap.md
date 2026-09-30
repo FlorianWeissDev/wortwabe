@@ -59,6 +59,16 @@ components, then the components in parallel.
 - **Done when:** progress survives reload, switching between weeks keeps each puzzle's progress
   separate, and the game is usable one-handed on a phone.
 
+## M5b — Reveal the solution
+
+**Status: done.**
+
+- "Lösung anzeigen" at the bottom of the found-words sheet, with an inline confirm step; the
+  revealed sheet greys the missed words, and "Weiterraten" hides them again.
+- The `revealed` flag is stored per puzzle (`src/storage/progress.ts`); the picker tags revealed
+  rows "aufgelöst".
+- **Done when:** a reveal survives reload, can always be undone, and later words still score.
+
 ## M6 — PWA & ship
 
 - Hand-written `public/manifest.webmanifest`, icons and `public/sw.js` (network-first for

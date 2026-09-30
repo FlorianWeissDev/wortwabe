@@ -94,6 +94,7 @@ export const de = {
   picker: {
     title: 'Rätsel wählen',
     currentBadge: 'Diese Woche',
+    revealedTag: 'aufgelöst',
     close: 'Schließen',
     rowDate: formatRowDate,
     foundOfTotal: (n: number, total: number): string => `${String(n)} von ${String(total)} Wörtern`,
@@ -131,6 +132,15 @@ export const de = {
     `Noch ${String(n)} ${n === 1 ? 'Punkt' : 'Punkte'} bis ${rank}`,
   foundOfTotal: (n: number, total: number): string => `${String(n)} von ${String(total)} Wörtern`,
   pangramLegend: 'Fett = Pangramm',
+  missedLegend: 'Grau = nicht gefunden',
+  reveal: {
+    action: 'Lösung anzeigen',
+    confirm: 'Lösung wirklich anzeigen?',
+    cancel: 'Abbrechen',
+    show: 'Anzeigen',
+    keepGuessing: 'Weiterraten',
+    stripSuffix: 'aufgelöst',
+  },
   points: (n: number): string => `${String(n)} P.`,
   puzzleFrom: (date: string): string => `Rätsel vom ${formatPuzzleDate(date)}`,
 } as const;

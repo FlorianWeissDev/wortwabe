@@ -1,4 +1,5 @@
 import { indexPuzzle, rankForScore, releasedDates, totalScore, currentPuzzleDate } from '../engine';
+import type { SavedProgress } from '../storage/progress';
 import type { Puzzle, PuzzleDate, RankId } from '../engine';
 
 export interface PickerEntry {
@@ -8,6 +9,7 @@ export interface PickerEntry {
   maxScore: number;
   foundCount: number;
   totalWords: number;
+  revealed: boolean;
   isCurrent: boolean;
   isSelected: boolean;
 }
@@ -16,7 +18,7 @@ export interface PickerEntry {
 export function pickerEntries(
   puzzles: ReadonlyMap<PuzzleDate, Puzzle>,
   now: Date,
-  load: (date: PuzzleDate) => string[],
+  load: (date: PuzzleDate) => SavedProgress,
   selected: PuzzleDate | null,
 ): PickerEntry[] {
   const current = currentPuzzleDate(now);
@@ -26,7 +28,8 @@ export function pickerEntries(
       return [];
     }
     const index = indexPuzzle(puzzle);
-    const found = load(date).filter((word) => index.solutions.has(word));
+    const progress = load(date);
+    const found = progress.foundWords.filter((word) => index.solutions.has(word));
     const score = totalScore(found, index);
     return [
       {
@@ -36,6 +39,7 @@ export function pickerEntries(
         maxScore: index.maxScore,
         foundCount: found.length,
         totalWords: index.solutions.size,
+        revealed: progress.revealed,
         isCurrent: date === current,
         isSelected: date === selected,
       },

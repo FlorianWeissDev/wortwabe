@@ -8,28 +8,37 @@ export function progressKey(date: PuzzleDate): string {
   return `wortwabe:progress:${date}`;
 }
 
-/** Returns saved normalized words; a missing, corrupt or unknown-schema entry yields `[]`. */
-export function loadProgress(storage: ProgressStorage, date: PuzzleDate): string[] {
+export interface SavedProgress {
+  foundWords: string[];
+  revealed: boolean;
+}
+
+/**
+ * Returns saved normalized words plus the reveal flag; a missing, corrupt or unknown-schema entry
+ * yields an empty, unrevealed state. `revealed` is optional in the stored value.
+ */
+export function loadProgress(storage: ProgressStorage, date: PuzzleDate): SavedProgress {
+  const empty = (): SavedProgress => ({ foundWords: [], revealed: false });
   try {
     const raw = storage.getItem(progressKey(date));
     if (raw === null) {
-      return [];
+      return empty();
     }
     const parsed: unknown = JSON.parse(raw);
     if (typeof parsed !== 'object' || parsed === null) {
-      return [];
+      return empty();
     }
-    const { schemaVersion, foundWords } = parsed as Record<string, unknown>;
+    const { schemaVersion, foundWords, revealed } = parsed as Record<string, unknown>;
     if (
       schemaVersion !== SCHEMA_VERSION ||
       !Array.isArray(foundWords) ||
       !foundWords.every((word) => typeof word === 'string')
     ) {
-      return [];
+      return empty();
     }
-    return foundWords as string[];
+    return { foundWords: foundWords as string[], revealed: revealed === true };
   } catch {
-    return [];
+    return empty();
   }
 }
 
@@ -37,12 +46,16 @@ export function loadProgress(storage: ProgressStorage, date: PuzzleDate): string
 export function saveProgress(
   storage: ProgressStorage,
   date: PuzzleDate,
-  foundWords: readonly string[],
+  progress: { foundWords: readonly string[]; revealed: boolean },
 ): void {
   try {
     storage.setItem(
       progressKey(date),
-      JSON.stringify({ schemaVersion: SCHEMA_VERSION, foundWords }),
+      JSON.stringify({
+        schemaVersion: SCHEMA_VERSION,
+        foundWords: progress.foundWords,
+        revealed: progress.revealed,
+      }),
     );
   } catch {
     // Progress simply stays in memory for this session.

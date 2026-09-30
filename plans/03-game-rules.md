@@ -115,6 +115,14 @@ single-letter-repeated interjections, offensive slurs, and anything the dictiona
 - Enter submits, Backspace deletes, Escape clears the line, Space shuffles.
 - Submitting an empty line is a no-op.
 
+## Revealing the solution
+
+The found-words sheet offers "Lösung anzeigen" (after an inline confirmation), which lists the
+words the player missed, greyed. The reveal is never a lock: "Weiterraten" hides the missed words
+again, and it can be repeated at any time. Words entered after a reveal count normally for score
+and rank. The state is stored per puzzle, and the picker marks revealed puzzles "aufgelöst" as a
+reminder.
+
 ## Feedback
 
 | Situation             | German message                                      |

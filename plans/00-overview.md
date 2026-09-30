@@ -40,7 +40,7 @@ accumulated score moves the player up a ladder of ranks until the top rank is re
 
 | Included                                     | Deferred                          |
 | -------------------------------------------- | --------------------------------- |
-| Weekly puzzle, released Wednesday            | Hints / "reveal a word"           |
+| Weekly puzzle, released Wednesday            | Hints                             |
 | Picker for previously released puzzles       | Share card / result image         |
 | Word validation, scoring, rank ladder        | Statistics across weeks (streaks) |
 | Found-words list, shuffle, delete, submit    | Sound effects                     |

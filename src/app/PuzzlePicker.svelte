@@ -70,6 +70,7 @@
             <span class="top">
               <span class="date">{de.picker.rowDate(entry.date)}</span>
               {#if entry.isCurrent}<span class="badge">{de.picker.currentBadge}</span>{/if}
+              {#if entry.revealed}<span class="tag">{de.picker.revealedTag}</span>{/if}
             </span>
             <span class="mid">
               <span class="rank">{de.ranks[entry.rankId]}</span>
@@ -229,6 +230,15 @@
     border: 1px solid var(--accent-strong);
     font-size: 0.72rem;
     font-weight: 700;
+  }
+
+  .tag {
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  .row.selected .tag {
+    color: var(--on-accent);
   }
 
   .mid {
